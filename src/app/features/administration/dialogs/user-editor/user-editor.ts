@@ -157,7 +157,7 @@ export class UserEditor {
     fullName: ['', Validators.required],
     login: ['', Validators.required],
     roles: [[], Validators.required],
-    relationKey: [''],
+    relationKey: [],
     applicationIds: [[]],
   });
 
