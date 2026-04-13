@@ -5,12 +5,13 @@ import { RouterModule } from '@angular/router';
 import { DrawerModule } from 'primeng/drawer';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
+import { ToastModule } from 'primeng/toast';
 
 import { ProfileOverlay, Sidebar } from '../../components';
 
 @Component({
   selector: 'app-home-layout',
-  imports: [RouterModule, Sidebar, DrawerModule, ButtonModule, AvatarModule, ProfileOverlay],
+  imports: [RouterModule, Sidebar, DrawerModule, ButtonModule, AvatarModule, ProfileOverlay, ToastModule],
   templateUrl: './home-layout.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

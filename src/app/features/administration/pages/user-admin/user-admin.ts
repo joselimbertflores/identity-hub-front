@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 
 import { TableModule, TablePageEvent } from 'primeng/table';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { TagModule } from 'primeng/tag';
-import { MenuItem } from 'primeng/api';
+import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 
 import { UserEditor } from '../../dialogs';
 import { SearchInput } from '../../../../shared';
@@ -15,13 +16,23 @@ import { UserDataSource } from '../../services';
 
 @Component({
   selector: 'app-user-admin',
-  imports: [CommonModule, ButtonModule, TableModule, SearchInput, MenuModule, TagModule],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    TableModule,
+    SearchInput,
+    MenuModule,
+    TagModule,
+    ConfirmDialogModule,
+  ],
   templateUrl: './user-admin.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ConfirmationService],
 })
 export default class UserAdmin {
   private dialogService = inject(DialogService);
-  private clientDataSource = inject(UserDataSource);
+  private userApi = inject(UserDataSource);
+  private confirmationService = inject(ConfirmationService);
+  private messageService = inject(MessageService);
 
   limit = signal(10);
   offset = signal(0);
@@ -32,7 +43,7 @@ export default class UserAdmin {
       limit: this.limit(),
       term: this.searchTerm(),
     }),
-    stream: ({ params }) => this.clientDataSource.findAll(params.limit, params.offset, params.term),
+    stream: ({ params }) => this.userApi.findAll(params.limit, params.offset, params.term),
   });
 
   dataSource = linkedSignal(() => {
@@ -68,6 +79,32 @@ export default class UserAdmin {
     });
   }
 
+  resetCrendentials(event: Event, user: any) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      header: '¿Restablecer credenciales?',
+      message: 'El usuario debera cambiar nuevamente sus credenciales',
+      rejectButtonProps: {
+        label: 'Cancelar',
+        severity: 'secondary',
+        outlined: true,
+      },
+      acceptButtonProps: {
+        label: 'Aceptar',
+        severity: 'primary',
+      },
+      accept: () => {
+        this.userApi.resetCredentials(user.id).subscribe(({ message }) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: message,
+          });
+        });
+      },
+    });
+  }
+
   search(term: string) {
     this.offset.set(0);
     this.searchTerm.set(term);
@@ -79,6 +116,7 @@ export default class UserAdmin {
   }
 
   openMenu(row: any, event: Event) {
+    console.log(row.id);
     this.menuItems = [
       {
         label: 'Opciones',
@@ -89,9 +127,9 @@ export default class UserAdmin {
             command: () => this.openUserDialog(row),
           },
           {
-            label: 'Eliminar',
-            icon: 'pi pi-calendar',
-            // command: () => this.remove(row.id, event),
+            label: 'Restablecer credenciales',
+            icon: 'pi pi-sync',
+            command: () => this.resetCrendentials(row, event),
           },
         ],
       },

@@ -177,12 +177,12 @@ export class UserEditor {
   save() {
     if (this.userForm.invalid) return;
 
-    const saveObservable = this.data
-      ? this.userDataSource.update(this.data.id, this.userForm.value)
-      : this.userDataSource.create(this.userForm.value);
-    saveObservable.subscribe((resp) => {
-      this.dialogRef.close(resp);
-    });
+    // const saveObservable = this.data
+    //   ? this.userDataSource.update(this.data.id, this.userForm.value)
+    //   : this.userDataSource.create(this.userForm.value);
+    // saveObservable.subscribe((resp) => {
+    //   this.dialogRef.close(resp);
+    // });
   }
 
   close() {
