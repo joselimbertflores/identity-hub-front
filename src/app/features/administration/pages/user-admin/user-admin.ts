@@ -46,6 +46,7 @@ export default class UserAdmin {
   });
 
   menuOptions = signal<MenuItem[]>([]);
+  menuItems: MenuItem[] = [];
 
   openUserDialog(user?: any) {
     const dialogRef = this.dialogService.open(UserEditor, {
@@ -75,6 +76,26 @@ export default class UserAdmin {
   changePage(event: TablePageEvent) {
     this.limit.set(event.rows);
     this.offset.set(event.first);
+  }
+
+  openMenu(row: any, event: Event) {
+    this.menuItems = [
+      {
+        label: 'Opciones',
+        items: [
+          {
+            label: 'Editar',
+            icon: 'pi pi-pencil',
+            command: () => this.openUserDialog(row),
+          },
+          {
+            label: 'Eliminar',
+            icon: 'pi pi-calendar',
+            // command: () => this.remove(row.id, event),
+          },
+        ],
+      },
+    ];
   }
 
   private updateItemDataSource(item: any): void {
