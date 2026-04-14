@@ -1,19 +1,14 @@
-import { FormGroup, FormArray, AbstractControl } from '@angular/forms';
+import { AbstractControl } from '@angular/forms';
 
 type customMessages = Record<string, string>;
 export class FormUtils {
-  static getControl(form: FormGroup | FormArray, path: string): AbstractControl | null {
-    return form.get(path);
-  }
-
-  static isValidField(form: FormGroup | FormArray, path: string): boolean {
-    const control = this.getControl(form, path);
+  static isInvalid(control: AbstractControl | null): boolean {
     return !!(control && control.invalid && (control.touched || control.dirty));
   }
-
-  static getErrorMessage(form: FormGroup | FormArray, path: string, messages?: customMessages) {
-    const control = this.getControl(form, path);
-    if (!control || !control.errors) return null;
+  static getErrorMessage(control: AbstractControl | null, messages?: customMessages) {
+    if (!control || !control.errors || !(control.touched || control.dirty)) {
+      return null;
+    }
 
     const errors = control.errors;
 
@@ -21,19 +16,16 @@ export class FormUtils {
       if (messages && messages[key]) {
         return messages[key];
       }
+
       switch (key) {
         case 'required':
           return 'Este campo es requerido';
-
         case 'minlength':
           return `Mínimo de ${errors['minlength'].requiredLength} caracteres.`;
-
         case 'maxlength':
           return `Máximo de ${errors['maxlength'].requiredLength} caracteres`;
-
         case 'pattern':
           return 'Formato inválido';
-
         default:
           return 'Campo inválido';
       }

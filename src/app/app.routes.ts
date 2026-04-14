@@ -3,9 +3,8 @@ import {
   isAuthenticatedGuard,
   isNotAuthenticatedGuard,
   mustChangePasswordGuard,
-  requiredPasswordChangeGuard,
-  roleGuard,
-} from './features/administration/guards';
+  changePasswordRouteGuard,
+} from './core/auth/guards';
 
 export const routes: Routes = [
   {
@@ -13,6 +12,12 @@ export const routes: Routes = [
     title: 'Inicio de Sesion',
     canActivate: [isNotAuthenticatedGuard],
     loadComponent: () => import('./features/auth/pages/login-page/login-page'),
+  },
+  {
+    path: 'change-password',
+    title: 'Actualizar contraseña',
+    canActivate: [ changePasswordRouteGuard],
+    loadComponent: () => import('./features/administration/pages/change-password/change-password'),
   },
   {
     path: 'home',
@@ -26,14 +31,7 @@ export const routes: Routes = [
         title: 'Bienvenido/a',
         loadComponent: () => import('./features/administration/pages/welcome-page/welcome-page'),
       },
-      {
-        path: 'change-password',
-        title: 'Actualizar contraseña',
-        canActivate: [requiredPasswordChangeGuard],
-        data: { requiredPasswordChange: true },
-        loadComponent: () =>
-          import('./features/administration/pages/change-password-page/change-password-page'),
-      },
+
       {
         path: 'settings',
         title: 'Configuraciones',
@@ -42,14 +40,14 @@ export const routes: Routes = [
       {
         path: 'users',
         title: 'Usuarios',
-        canActivate: [roleGuard],
+        // canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
         loadComponent: () => import('./features/administration/pages/user-admin/user-admin'),
       },
       {
         path: 'applications',
         title: 'Sistemas',
-        canActivate: [roleGuard],
+        // canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
         loadComponent: () =>
           import('./features/administration/pages/application-admin/application-admin'),

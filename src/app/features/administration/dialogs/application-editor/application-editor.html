@@ -23,11 +23,11 @@
         <input id="code" [fluid]="true" pInputText autocomplete="off" formControlName="clientId" />
         <label for="code">Identificador unico</label>
       </p-floatlabel>
-      @if (formUtils.isValidField(applicationForm, 'clientId')) {
+      <!-- @if (formUtils.isValidField(applicationForm, 'clientId')) {
       <p-message severity="error" size="small" variant="simple">
         {{ formUtils.getErrorMessage(applicationForm, 'clientId') }}
       </p-message>
-      }
+      } -->
     </div>
     <div>
       <p-floatlabel variant="on">

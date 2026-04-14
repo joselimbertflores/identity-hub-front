@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import { map } from 'rxjs';
 
-import { AuthDataSource } from '../services';
+import { AuthDataSource } from '../auth-data-source';
 
 export const isNotAuthenticatedGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
@@ -13,6 +13,6 @@ export const isNotAuthenticatedGuard: CanActivateFn = (route, state) => {
         return router.createUrlTree(['/home']);
       }
       return true;
-    })
+    }),
   );
 };

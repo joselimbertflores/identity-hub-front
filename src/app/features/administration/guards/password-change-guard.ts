@@ -19,8 +19,6 @@ export const mustChangePasswordGuard: CanActivateChildFn = (_route, state) => {
 export const requiredPasswordChangeGuard: CanActivateFn = () => {
   const router = inject(Router);
   const user = inject(AuthDataSource).user();
-
   if (user?.mustChangePassword) return true;
-
-  return router.createUrlTree(['/home/settings']);
+  return router.createUrlTree(['/home']);
 };
