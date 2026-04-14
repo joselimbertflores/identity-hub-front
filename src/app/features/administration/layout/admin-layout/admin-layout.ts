@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { RouterModule } from '@angular/router';
 
@@ -7,17 +7,29 @@ import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { ToastModule } from 'primeng/toast';
 
-import { ProfileOverlay, Sidebar } from '../../components';
+import { ProfileOverlay, AdminSidebar } from './components';
+import { AuthDataSource } from '../../../../core';
 
 @Component({
-  selector: 'app-home-layout',
-  imports: [RouterModule, Sidebar, DrawerModule, ButtonModule, AvatarModule, ProfileOverlay, ToastModule],
-  templateUrl: './home-layout.html',
+  selector: 'app-admin-layout',
+  imports: [
+    RouterModule,
+    DrawerModule,
+    ButtonModule,
+    AvatarModule,
+    ProfileOverlay,
+    ToastModule,
+    AdminSidebar,
+  ],
+  templateUrl: './admin-layout.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class HomeLayout {
+export default class AdminLayout {
+  private authDataSource = inject(AuthDataSource);
+  
   isMobile = signal(false);
   mobileMenuOpen = signal(false);
+  user = this.authDataSource.user;
 
   constructor(private breakpoint: BreakpointObserver) {
     this.breakpoint.observe('(max-width: 1023px)').subscribe(({ matches }) => {

@@ -79,7 +79,7 @@ export default class UserAdmin {
     });
   }
 
-  resetCrendentials(event: Event, user: any) {
+  resetCrendentials(user: any, event: Event) {
     this.confirmationService.confirm({
       target: event.target as EventTarget,
       header: '¿Restablecer credenciales?',

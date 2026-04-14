@@ -1,7 +1,14 @@
 <div class="max-w-4xl mx-auto p-2 md:p-4">
   <div class="mb-8">
+    @if(isRequiredPasswordChange){
+    <h1 class="text-lg sm:text-2xl font-bold text-gray-900">Actualice su contraseña</h1>
+    <p class="max-w-2xl text-sm/6">
+      Debe cambiar su contraseña antes de continuar usando el sistema.
+    </p>
+    } @else {
     <h1 class="text-lg sm:text-2xl font-bold text-gray-900">Configuracion del usuario</h1>
-    <p class="max-w-2xl text-sm/6">Cambie su datos de acceso</p>
+    <p class="max-w-2xl text-sm/6">Cambie sus datos de acceso</p>
+    }
   </div>
   <dl class="-my-3 divide-y divide-gray-200 text-sm">
     <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">

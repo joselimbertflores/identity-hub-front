@@ -7,13 +7,14 @@ import {
   Validators,
   FormGroup,
 } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
 import { MessageModule } from 'primeng/message';
 import { ButtonModule } from 'primeng/button';
 
-import { AuthDataSource } from '../../services';
+import { AuthDataSource } from '../../../../core';
 import { FormUtils } from '../../../../helpers';
 
 @Component({
@@ -24,6 +25,8 @@ import { FormUtils } from '../../../../helpers';
 })
 export default class SettingsPage {
   private authDataSource = inject(AuthDataSource);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   formUtils = FormUtils;
   userForm: FormGroup = inject(FormBuilder).nonNullable.group(
@@ -42,6 +45,7 @@ export default class SettingsPage {
   );
 
   user = this.authDataSource.user;
+  isRequiredPasswordChange = this.route.snapshot.data['requiredPasswordChange'] === true;
 
   protected readonly errorMessages = {
     password: {
@@ -57,6 +61,10 @@ export default class SettingsPage {
     const { password } = this.userForm.value;
     this.authDataSource.updateProfile(password).subscribe(() => {
       this.userForm.reset();
+      if (this.isRequiredPasswordChange) {
+        this.router.navigate(['/home/welcome']);
+        return;
+      }
       this.showMessage();
     });
   }

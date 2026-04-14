@@ -1,6 +1,1 @@
-export interface AuthUserResponse {
-  id: string;
-  login: string;
-  fullName: string;
-  roles: string[];
-}
+export type { AuthUserResponse } from '../../../../core/auth/auth.types';

@@ -1,5 +1,11 @@
 import { Routes } from '@angular/router';
-import { isAuthenticatedGuard, isNotAuthenticatedGuard, roleGuard } from './features/layout/guards';
+import {
+  isAuthenticatedGuard,
+  isNotAuthenticatedGuard,
+  mustChangePasswordGuard,
+  requiredPasswordChangeGuard,
+  roleGuard,
+} from './features/administration/guards';
 
 export const routes: Routes = [
   {
@@ -12,17 +18,26 @@ export const routes: Routes = [
     path: 'home',
     title: 'Inicio',
     canActivate: [isAuthenticatedGuard],
-    loadComponent: () => import('./features/layout/pages/home-layout/home-layout'),
+    canActivateChild: [mustChangePasswordGuard],
+    loadComponent: () => import('./features/administration/layout/admin-layout/admin-layout'),
     children: [
       {
         path: 'welcome',
         title: 'Bienvenido/a',
-        loadComponent: () => import('./features/layout/pages/welcome-page/welcome-page'),
+        loadComponent: () => import('./features/administration/pages/welcome-page/welcome-page'),
+      },
+      {
+        path: 'change-password',
+        title: 'Actualizar contraseña',
+        canActivate: [requiredPasswordChangeGuard],
+        data: { requiredPasswordChange: true },
+        loadComponent: () =>
+          import('./features/administration/pages/change-password-page/change-password-page'),
       },
       {
         path: 'settings',
         title: 'Configuraciones',
-        loadComponent: () => import('./features/layout/pages/settings-page/settings-page'),
+        loadComponent: () => import('./features/administration/pages/settings-page/settings-page'),
       },
       {
         path: 'users',

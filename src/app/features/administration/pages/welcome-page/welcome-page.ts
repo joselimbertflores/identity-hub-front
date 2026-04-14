@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { AuthDataSource } from '../../services';
+import { AuthDataSource } from '../../../../core';
 
 @Component({
   selector: 'app-welcome-page',

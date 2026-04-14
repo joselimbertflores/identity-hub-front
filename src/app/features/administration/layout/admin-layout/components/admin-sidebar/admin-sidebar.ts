@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { AppIcon } from '../../../../shared';
-import { AuthDataSource } from '../../services';
+import { AuthUserResponse } from '../../../../../../core/auth/auth.types';
+import { MENU_ACTIONS } from '../../../../constants/menu.config';
+import { AppIcon } from '../../../../../../shared';
 
 @Component({
-  selector: 'app-sidebar',
+  selector: 'admin-sidebar',
   imports: [RouterModule, AppIcon],
   template: `
     <nav class="h-full flex flex-col">
@@ -40,7 +41,11 @@ import { AuthDataSource } from '../../services';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Sidebar {
-  private authDataSource = inject(AuthDataSource);
-  menu = this.authDataSource.menu;
+export class AdminSidebar {
+  user = input.required<AuthUserResponse | null>();
+  menu = computed(() =>
+    MENU_ACTIONS.filter((item) =>
+      (item['roles'] as string[]).some((role) => this.user()?.roles.includes(role)),
+    ),
+  );
 }
