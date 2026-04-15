@@ -13,7 +13,7 @@ import {
   passwordMatchValidator,
   passwordStrengthValidator,
 } from '../../utils/validators/password.validator';
-import { AuthDataSource } from '../../services';
+import { AuthDataSource } from '../../../../core';
 
 @Component({
   selector: 'app-change-password',

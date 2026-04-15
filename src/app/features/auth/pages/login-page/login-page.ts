@@ -45,7 +45,7 @@ const ERROR_MESSAGES: Record<string, string> = {
                 id="login-title"
                 class="mt-2 text-xl font-semibold leading-tight text-surface-950 sm:text-2xl"
               >
-                Sistema de Autenticación Institucional
+                Sistema Institucional de Autenticación y Acceso
               </h1>
 
               <p id="login-description" class="mt-2 text-sm leading-6 text-surface-600">

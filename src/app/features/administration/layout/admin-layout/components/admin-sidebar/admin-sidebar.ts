@@ -15,7 +15,7 @@ import { AppIcon } from '../../../../../../shared';
         <span class="text-xl font-bold tracking-tight text-surface-900"> SIAA </span>
       </div>
 
-      <ul class="flex-1 sm:p-2 space-y-1 overflow-auto">
+      <ul class="flex-1 p-2 space-y-1 overflow-auto">
         @for (item of menu(); track $index) {
           <li>
             <a

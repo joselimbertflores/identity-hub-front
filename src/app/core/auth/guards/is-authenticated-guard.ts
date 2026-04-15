@@ -1,7 +1,8 @@
 import { Router, UrlTree, type CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
 
-import { delay, map, tap } from 'rxjs';
+import { map } from 'rxjs';
+
 import { AuthDataSource } from '../auth-data-source';
 
 export const isAuthenticatedGuard: CanActivateFn = () => {
@@ -9,7 +10,7 @@ export const isAuthenticatedGuard: CanActivateFn = () => {
   const authDataSource = inject(AuthDataSource);
 
   return authDataSource.checkAuthStatus().pipe(
-    delay(3000),
+    // delay(3000),
     map((isAuth): boolean | UrlTree => {
       return isAuth ? true : router.createUrlTree(['/login']);
     }),

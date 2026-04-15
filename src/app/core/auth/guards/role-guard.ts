@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
+import { AuthDataSource } from '../auth-data-source';
 
-import { AuthDataSource } from '../services';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const user = inject(AuthDataSource).user();

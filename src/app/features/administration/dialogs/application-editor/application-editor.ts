@@ -54,7 +54,6 @@ export class ApplicationEditor {
   formUtils = FormUtils;
 
   ngOnInit() {
-    console.log("OPEN DIALOG");
     this.loadForm();
   }
 

@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
 import {
+  roleGuard,
   isAuthenticatedGuard,
   isNotAuthenticatedGuard,
   mustChangePasswordGuard,
-  changePasswordRouteGuard,
+  canAccessChangePasswordGuard,
 } from './core/auth/guards';
 
 export const routes: Routes = [
@@ -16,7 +17,7 @@ export const routes: Routes = [
   {
     path: 'change-password',
     title: 'Actualizar contraseña',
-    canActivate: [ changePasswordRouteGuard],
+    canActivate: [canAccessChangePasswordGuard],
     loadComponent: () => import('./features/administration/pages/change-password/change-password'),
   },
   {
@@ -27,31 +28,31 @@ export const routes: Routes = [
     loadComponent: () => import('./features/administration/layout/admin-layout/admin-layout'),
     children: [
       {
-        path: 'welcome',
-        title: 'Bienvenido/a',
-        loadComponent: () => import('./features/administration/pages/welcome-page/welcome-page'),
-      },
-
-      {
-        path: 'settings',
-        title: 'Configuraciones',
-        loadComponent: () => import('./features/administration/pages/settings-page/settings-page'),
-      },
-      {
         path: 'users',
         title: 'Usuarios',
-        // canActivate: [roleGuard],
+        canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
         loadComponent: () => import('./features/administration/pages/user-admin/user-admin'),
       },
       {
         path: 'applications',
         title: 'Sistemas',
-        // canActivate: [roleGuard],
+        canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
         loadComponent: () =>
           import('./features/administration/pages/application-admin/application-admin'),
       },
+      {
+        path: 'welcome',
+        title: 'Bienvenido/a',
+        loadComponent: () => import('./features/administration/pages/welcome-page/welcome-page'),
+      },
+      {
+        path: 'settings',
+        title: 'Configuraciones',
+        loadComponent: () => import('./features/administration/pages/settings-page/settings-page'),
+      },
+
       {
         path: 'apps',
         title: 'Mis sistemas',

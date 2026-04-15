@@ -190,7 +190,6 @@ export class UserEditor {
   }
 
   private loadForm(): void {
-    console.log(this.data);
     if (!this.data) return;
     const { userApplications: accesses, ...props } = this.data;
     this.userForm.patchValue({

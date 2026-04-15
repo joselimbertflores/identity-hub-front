@@ -94,11 +94,12 @@ export default class UserAdmin {
         severity: 'primary',
       },
       accept: () => {
-        this.userApi.resetCredentials(user.id).subscribe(({ message }) => {
+        this.userApi.resetCredentials(user.id).subscribe(() => {
           this.messageService.add({
+            summary: 'Credenciales restablecidas',
+            detail: 'El cambio de contraseña es requerido',
             severity: 'success',
-            summary: 'Success',
-            detail: message,
+            life: 2000,
           });
         });
       },
@@ -116,7 +117,6 @@ export default class UserAdmin {
   }
 
   openMenu(row: any, event: Event) {
-    console.log(row.id);
     this.menuItems = [
       {
         label: 'Opciones',
