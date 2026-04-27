@@ -8,13 +8,13 @@ import { ApplicationResponse } from '../interfaces';
   providedIn: 'root',
 })
 export class ApplicationDataSource {
-  readonly URL = `${environment.baseUrl}/clients`;
+  readonly URL = `${environment.baseUrl}/applications`;
   private http = inject(HttpClient);
 
   constructor() {}
 
   create(form: object) {
-    return this.http.post(this.URL, form);
+    return this.http.post<{ application: any; clientSecret: string }>(this.URL, form);
   }
 
   update(id: number, form: object) {
@@ -28,5 +28,9 @@ export class ApplicationDataSource {
     return this.http.get<{ clients: ApplicationResponse[]; total: number }>(this.URL, {
       params,
     });
+  }
+
+  regenerateSecret(id: number) {
+    return this.http.post<{ clientSecret: string }>(`${this.URL}/${id}/regenerate-secret`, {});
   }
 }

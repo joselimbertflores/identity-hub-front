@@ -40,13 +40,17 @@ export class ApplicationEditor {
     name: ['', Validators.required],
     clientId: [
       '',
-      [Validators.required, Validators.pattern('^[a-zA-Z0-9_-]*$'), Validators.minLength(3)],
+      [
+        Validators.required,
+        Validators.pattern('^[a-zA-Z0-9_-]*$'),
+        Validators.minLength(3),
+        Validators.maxLength(100),
+      ],
     ],
     description: [''],
     launchUrl: ['', Validators.required],
-    clientProfile: ['', Validators.required],
-    isConfidential: [true, Validators.required],
-    isActive: [true, Validators.required],
+    isConfidential: [true],
+    isActive: [true],
     redirectUris: [[], Validators.required],
     color: ['#2B7FFF'],
   });
@@ -58,19 +62,37 @@ export class ApplicationEditor {
   }
 
   save() {
-    const saveObservable = this.data
-      ? this.clientDataSource.update(this.data.id, this.applicationForm.value)
-      : this.clientDataSource.create(this.applicationForm.value);
-    saveObservable.subscribe((resp) => {
-      this.dialogRef.close(resp);
-    });
+    if (this.applicationForm.invalid) {
+      this.applicationForm.markAllAsTouched();
+      return;
+    }
+
+    if (this.data) {
+      this.clientDataSource.update(this.data.id, this.applicationForm.value).subscribe((app) => {
+        this.dialogRef.close({ application: app });
+      });
+    } else {
+      this.clientDataSource
+        .create(this.applicationForm.value)
+        .subscribe(({ clientSecret, application }) => {
+          this.dialogRef.close({ application, clientSecret });
+        });
+    }
   }
 
   close() {
     this.dialogRef.close();
   }
 
+  preventSubmit(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   private loadForm() {
-    this.applicationForm.patchValue(this.data ?? {});
+    if (this.data) {
+      this.applicationForm.controls['clientId'].disable();
+      this.applicationForm.patchValue(this.data);
+    }
   }
 }

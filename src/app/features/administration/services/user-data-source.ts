@@ -29,7 +29,7 @@ export class UserDataSource {
   }
 
   update(id: string, form: object) {
-    return this.http.put<UserResponse>(`${this.URL}/access/${id}`, form);
+    return this.http.put<{ user: UserResponse }>(`${this.URL}/access/${id}`, form);
   }
 
   resetCredentials(id: string) {

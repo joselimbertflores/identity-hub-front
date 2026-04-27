@@ -1,3 +1,5 @@
+import { ApplicationResponse } from './application-response.interface';
+
 export interface UserResponse {
   id: string;
   login: string;
@@ -10,12 +12,5 @@ export interface UserResponse {
   roles: string[];
   createdAt: string;
   updatedAt: string;
-  userApplications: UserApplicationResponse[];
-}
-
-export interface UserApplicationResponse {
-  id: string;
-  userId: string;
-  applicationId: number;
-  createdAt: string;
+  applications: ApplicationResponse[];
 }

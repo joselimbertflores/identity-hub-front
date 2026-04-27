@@ -1,23 +1,27 @@
-import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { TableModule, TablePageEvent } from 'primeng/table';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
+import { MenuModule } from 'primeng/menu';
 
+import { ApplicationEditor, ClientSecretDialog } from '../../dialogs';
 import { ApplicationDataSource } from '../../services';
 import { SearchInput } from '../../../../shared';
-import { ApplicationEditor } from '../../dialogs';
 
 @Component({
   selector: 'app-application-admin',
-  imports: [ButtonModule, TableModule, SearchInput],
+  imports: [ButtonModule, TableModule, SearchInput, ConfirmDialogModule, MenuModule],
   templateUrl: './application-admin.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ConfirmationService],
 })
 export default class ApplicationAdmin {
   private dialogService = inject(DialogService);
-  private clientDataSource = inject(ApplicationDataSource);
+  private applicationApi = inject(ApplicationDataSource);
+  private confirmationService = inject(ConfirmationService);
 
   limit = signal(10);
   offset = signal(0);
@@ -28,7 +32,7 @@ export default class ApplicationAdmin {
       limit: this.limit(),
       term: this.searchTerm(),
     }),
-    stream: ({ params }) => this.clientDataSource.findAll(params.limit, params.offset, params.term),
+    stream: ({ params }) => this.applicationApi.findAll(params.limit, params.offset, params.term),
   });
 
   dataSource = linkedSignal(() => {
@@ -40,6 +44,8 @@ export default class ApplicationAdmin {
     if (!this.roleResource.hasValue()) return 0;
     return this.roleResource.value().total;
   });
+
+  menuItems: MenuItem[] = [];
 
   openApplicationDialog(app?: any) {
     const dialogRef = this.dialogService.open(ApplicationEditor, {
@@ -55,10 +61,52 @@ export default class ApplicationAdmin {
         '640px': '90vw',
       },
     });
-    dialogRef?.onClose.subscribe((result?: any) => {
+    dialogRef?.onClose.subscribe((result?: { application: any; clientSecret?: string }) => {
       if (!result) return;
-      this.updateItemDataSource(result);
+      if (result.clientSecret) {
+        this.showClientSecretDialog(result.application, result.clientSecret);
+      }
+      this.updateItemDataSource(result.application);
     });
+  }
+
+  confirmRegenerateSecret(application: any) {
+    this.confirmationService.confirm({
+      header: 'Regenerar secreto',
+      message: `El secreto actual de "${application.name}" dejará de funcionar inmediatamente. ¿Deseas continuar?`,
+      rejectButtonProps: {
+        label: 'Cancelar',
+        severity: 'secondary',
+        outlined: true,
+      },
+      acceptButtonProps: {
+        label: 'Regenerar',
+        severity: 'primary',
+      },
+      accept: () => {
+        this.regenerateSecret(application);
+      },
+    });
+  }
+
+  openMenu(row: any) {
+    this.menuItems = [
+      {
+        label: 'Opciones',
+        items: [
+          {
+            label: 'Editar',
+            icon: 'pi pi-pencil',
+            command: () => this.openApplicationDialog(row),
+          },
+          {
+            label: 'Regenerar secreto',
+            icon: 'pi pi-key',
+            command: () => this.confirmRegenerateSecret(row),
+          },
+        ],
+      },
+    ];
   }
 
   search(term: string) {
@@ -82,5 +130,27 @@ export default class ApplicationAdmin {
         return [...values];
       });
     }
+  }
+
+  private regenerateSecret(application: any) {
+    this.applicationApi.regenerateSecret(application.id).subscribe(({ clientSecret }) => {
+      this.showClientSecretDialog(application, clientSecret);
+    });
+  }
+
+  private showClientSecretDialog(application: any, clientSecret: string): void {
+    this.dialogService.open(ClientSecretDialog, {
+      header: 'Nuevo secreto generado',
+      closeOnEscape: true,
+      draggable: false,
+      closable: true,
+      modal: true,
+      width: '40vw',
+      data: { application, clientSecret },
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+    });
   }
 }
