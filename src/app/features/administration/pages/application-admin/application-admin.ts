@@ -7,6 +7,7 @@ import { ConfirmationService, MenuItem } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
+import { TagModule } from 'primeng/tag';
 
 import { ApplicationEditor, ClientSecretDialog } from '../../dialogs';
 import { ApplicationDataSource } from '../../services';
@@ -14,7 +15,7 @@ import { SearchInput } from '../../../../shared';
 
 @Component({
   selector: 'app-application-admin',
-  imports: [ButtonModule, TableModule, SearchInput, ConfirmDialogModule, MenuModule],
+  imports: [ButtonModule, TableModule, SearchInput, ConfirmDialogModule, MenuModule, TagModule],
   templateUrl: './application-admin.html',
   providers: [ConfirmationService],
 })

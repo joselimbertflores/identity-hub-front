@@ -137,6 +137,7 @@ export default class UserAdmin {
   }
 
   private updateItemDataSource(item: any): void {
+    console.log(item);
     const index = this.dataSource().findIndex(({ id }) => item.id === id);
     if (index === -1) {
       this.dataSource.update((values) => [item, ...values]);

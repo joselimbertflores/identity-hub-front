@@ -33,4 +33,10 @@ export class ApplicationDataSource {
   regenerateSecret(id: number) {
     return this.http.post<{ clientSecret: string }>(`${this.URL}/${id}/regenerate-secret`, {});
   }
+
+  getFormOptions() {
+    return this.http.get<{ id: number; name: string; description: string }[]>(
+      `${this.URL}/options`,
+    );
+  }
 }

@@ -29,6 +29,7 @@
       <tr>
         <th>Nombre</th>
         <th>Descripcion</th>
+        <th class="w-[150px]">Estado</th>
         <th style="width: 2.5rem"></th>
       </tr>
     </ng-template>
@@ -36,6 +37,13 @@
       <tr>
         <td>{{ item.name }}</td>
         <td>{{ item.description }}</td>
+        <td>
+          @if (item.isActive) {
+            <p-tag severity="success" value="Habilitado" />
+          } @else {
+            <p-tag severity="warn" value="Deshabilitado" />
+          }
+        </td>
         <td>
           <p-button
             severity="secondary"

@@ -10,8 +10,9 @@ import { ListboxModule } from 'primeng/listbox';
 import { StepperModule } from 'primeng/stepper';
 import { ButtonModule } from 'primeng/button';
 
-import { UserDataSource } from '../../services';
+import { ApplicationDataSource, UserDataSource } from '../../services';
 import { UserResponse } from '../../interfaces';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-user-editor',
@@ -163,7 +164,9 @@ export class UserEditor {
 
   selectApplicationsIds = signal<number[]>([]);
 
-  readonly applications = this.userDataSource.applications;
+  readonly applications = toSignal(inject(ApplicationDataSource).getFormOptions(), {
+    initialValue: [],
+  });
 
   readonly ROLES = [
     { label: 'Administrador', value: 'ADMIN' },
@@ -180,8 +183,8 @@ export class UserEditor {
     const saveObservable = this.data
       ? this.userDataSource.update(this.data.id, this.userForm.value)
       : this.userDataSource.create(this.userForm.value);
-    saveObservable.subscribe((resp) => {
-      this.dialogRef.close(resp);
+    saveObservable.subscribe(({ user }) => {
+      this.dialogRef.close(user);
     });
   }
 

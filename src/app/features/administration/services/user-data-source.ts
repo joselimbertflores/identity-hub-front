@@ -1,25 +1,26 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { inject, Injectable } from '@angular/core';
 
 import { map, tap } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
-import { ApplicationResponse, UserResponse } from '../interfaces';
+import { UserResponse } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserDataSource {
   private http = inject(HttpClient);
-  readonly URL = environment.baseUrl;
+  readonly URL = `${environment.baseUrl}/users`;
 
-  readonly applications = toSignal(
-    this.http.get<ApplicationResponse[]>(`${this.URL}/access/applications`),
-    {
-      initialValue: [],
-    },
-  );
+  findAll(limit: number, offset: number, term?: string) {
+    const params = new HttpParams({
+      fromObject: { limit, offset, ...(term && { term }) },
+    });
+    return this.http.get<{ users: any[]; total: number }>(this.URL, {
+      params,
+    });
+  }
 
   create(form: object) {
     return this.http.post<{ user: UserResponse; credentialsPdfBase64: string }>(
@@ -29,7 +30,7 @@ export class UserDataSource {
   }
 
   update(id: string, form: object) {
-    return this.http.put<{ user: UserResponse }>(`${this.URL}/access/${id}`, form);
+    return this.http.patch<{ user: UserResponse }>(`${this.URL}/${id}`, form);
   }
 
   resetCredentials(id: string) {
@@ -43,21 +44,6 @@ export class UserDataSource {
         map((resp) => ({
           message: resp.message,
         })),
-      );
-  }
-
-  findAll(limit: number, offset: number, term?: string) {
-    const params = new HttpParams({
-      fromObject: { limit, offset, ...(term && { term }) },
-    });
-    return this.http
-      .get<{ users: any[]; total: number }>(`${this.URL}/users`, {
-        params,
-      })
-      .pipe(
-        tap((resp) => {
-          console.log(resp);
-        }),
       );
   }
 
