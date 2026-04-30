@@ -1,5 +1,3 @@
-import { ApplicationResponse } from './application-response.interface';
-
 export interface UserResponse {
   id: string;
   login: string;
@@ -12,5 +10,11 @@ export interface UserResponse {
   roles: string[];
   createdAt: string;
   updatedAt: string;
-  applications: ApplicationResponse[];
+  applications: UserApplicationResponse[];
+}
+
+export interface UserApplicationResponse {
+  id: number;
+  name: string;
+  description: string;
 }

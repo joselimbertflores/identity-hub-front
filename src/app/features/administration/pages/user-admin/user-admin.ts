@@ -13,6 +13,7 @@ import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { UserEditor } from '../../dialogs';
 import { SearchInput } from '../../../../shared';
 import { UserDataSource } from '../../services';
+import { UserResponse } from '../../interfaces';
 
 @Component({
   selector: 'app-user-admin',
@@ -59,7 +60,7 @@ export default class UserAdmin {
   menuOptions = signal<MenuItem[]>([]);
   menuItems: MenuItem[] = [];
 
-  openUserDialog(user?: any) {
+  openUserDialog(user?: UserResponse) {
     const dialogRef = this.dialogService.open(UserEditor, {
       header: user ? 'Editar usuario' : 'Crear usuario',
       modal: true,
@@ -73,13 +74,13 @@ export default class UserAdmin {
         '640px': '90vw',
       },
     });
-    dialogRef?.onClose.subscribe((result?: any) => {
+    dialogRef?.onClose.subscribe((result?: UserResponse) => {
       if (!result) return;
       this.updateItemDataSource(result);
     });
   }
 
-  resetCrendentials(user: any, event: Event) {
+  resetCrendentials(user: UserResponse, event: Event) {
     this.confirmationService.confirm({
       target: event.target as EventTarget,
       header: '¿Restablecer credenciales?',
@@ -116,7 +117,7 @@ export default class UserAdmin {
     this.offset.set(event.first);
   }
 
-  openMenu(row: any, event: Event) {
+  openMenu(row: UserResponse, event: Event) {
     this.menuItems = [
       {
         label: 'Opciones',
@@ -136,8 +137,7 @@ export default class UserAdmin {
     ];
   }
 
-  private updateItemDataSource(item: any): void {
-    console.log(item);
+  private updateItemDataSource(item: UserResponse): void {
     const index = this.dataSource().findIndex(({ id }) => item.id === id);
     if (index === -1) {
       this.dataSource.update((values) => [item, ...values]);
