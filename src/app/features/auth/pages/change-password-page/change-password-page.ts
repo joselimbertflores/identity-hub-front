@@ -1,5 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -10,22 +11,23 @@ import { MessageService } from 'primeng/api';
 
 import { FormUtils } from '../../../../helpers';
 import {
+  PASSWORD_RULES,
   passwordMatchValidator,
   passwordStrengthValidator,
 } from '../../utils/validators/password.validator';
 import { AuthDataSource } from '../../../../core';
 
 @Component({
-  selector: 'app-change-password',
+  selector: 'app-change-password-page',
   imports: [ReactiveFormsModule, PasswordModule, ButtonModule, FloatLabelModule, MessageModule],
-  templateUrl: './change-password.html',
+  templateUrl: './change-password-page.html',
 })
-export default class ChangePassword {
+export default class ChangePasswordPage {
   private router = inject(Router);
   private authDataSource = inject(AuthDataSource);
   private messageService = inject(MessageService);
 
-  form: FormGroup = inject(FormBuilder).group(
+  form: FormGroup = inject(FormBuilder).nonNullable.group(
     {
       password: ['', [Validators.required, Validators.minLength(8), passwordStrengthValidator()]],
       confirmPassword: ['', Validators.required],
@@ -44,6 +46,36 @@ export default class ChangePassword {
     missingNumber: 'Debe incluir un número.',
     missingSymbol: 'Debe incluir un símbolo.',
   };
+
+  private readonly passwordValue = toSignal(this.form.controls['password'].valueChanges, {
+    initialValue: this.form.controls['password'].value,
+  });
+
+  readonly passwordRequirements = computed(() => {
+    const password = this.passwordValue();
+    return [
+      {
+        label: 'Mínimo 8 caracteres.',
+        valid: password.length >= PASSWORD_RULES.minLength,
+      },
+      {
+        label: 'Al menos una letra mayúscula.',
+        valid: PASSWORD_RULES.uppercase.test(password),
+      },
+      {
+        label: 'Al menos una letra minúscula.',
+        valid: PASSWORD_RULES.lowercase.test(password),
+      },
+      {
+        label: 'Al menos un número.',
+        valid: PASSWORD_RULES.number.test(password),
+      },
+      {
+        label: 'Al menos un símbolo.',
+        valid: PASSWORD_RULES.symbol.test(password),
+      },
+    ];
+  });
 
   submit(): void {
     if (this.isLoading()) return;

@@ -10,17 +10,16 @@ import { AuthDataSource } from '../../../../core';
     <div class="flex flex-col items-center justify-center h-full p-4 text-center">
       <div class="max-w-2xl">
         <div class="mb-8">
-          <i class="pi pi-home" style="font-size: 2.5rem"></i>
+          <i class="pi pi-shield text-primary-600" style="font-size: 2.5rem"></i>
         </div>
 
         <h1 class="text-xl md:text-2xl font-bold text-surface-900 tracking-tight mb-4">
-          Bienvenid@
+          Hola,
           <span class="text-primary-600">{{ userFullName | titlecase }}</span>
         </h1>
 
-        <p class="text-sm sm:text-lg text-surface-500 font-medium mb-10 leading-relaxed">
-          Ha ingresado al Sistema Institucional de Autenticación y Acceso (SIAA). Desde aquí podrá
-          acceder directamente a los sistemas que le han sido asignados.
+        <p class="text-sm sm:text-lg text-surface-500 font-medium mb-6 leading-relaxed">
+          Su sesión está activa en el Sistema Institucional de Autenticación y Acceso.
         </p>
 
         <div class="mt-16 pt-8 border-t border-surface-200 flex justify-center">

@@ -9,7 +9,7 @@ import { AuthUserResponse } from './auth.types';
   providedIn: 'root',
 })
 export class AuthDataSource {
-  readonly URL = `${environment.baseUrl}/auth`;
+  readonly URL = `${environment.identityHubUrl}/api/auth`;
   private http = inject(HttpClient);
 
   private _user = signal<AuthUserResponse | null>(null);
@@ -43,17 +43,6 @@ export class AuthDataSource {
   }
 
   logout() {
-    return this.http.post(`${environment.baseUrl}/auth/logout`, {}, { withCredentials: true });
-  }
-
-  updateProfile(password: string) {
-    // TODO update user if change another props
-    return this.http.patch(`${this.URL}/profile`, { password }).pipe(
-      tap(() => {
-        const user = this._user();
-        if (!user) return;
-        this._user.set({ ...user, mustChangePassword: false });
-      }),
-    );
+    return this.http.post(`${this.URL}/logout`, {}, { withCredentials: true });
   }
 }

@@ -8,7 +8,8 @@ import { AvatarModule } from 'primeng/avatar';
 import { RippleModule } from 'primeng/ripple';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
-import { AuthDataSource } from '../../../../../../core';
+
+import { AuthDataSource } from '../../../../core';
 
 
 

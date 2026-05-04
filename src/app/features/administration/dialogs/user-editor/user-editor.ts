@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
 import { PasswordModule } from 'primeng/password';
 import { ListboxModule } from 'primeng/listbox';
 import { StepperModule } from 'primeng/stepper';
@@ -12,7 +14,6 @@ import { ButtonModule } from 'primeng/button';
 
 import { ApplicationDataSource, UserDataSource } from '../../services';
 import { UserResponse } from '../../interfaces';
-import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-user-editor',
@@ -21,10 +22,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
     MultiSelectModule,
     FloatLabelModule,
     InputTextModule,
-    ButtonModule,
+    CheckboxModule,
     PasswordModule,
     StepperModule,
     ListboxModule,
+    ButtonModule,
   ],
   template: `
     <form [formGroup]="userForm" (ngSubmit)="save()">
@@ -87,6 +89,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
                     />
                     <label for="relationKey">Clave de relación</label>
                   </p-floatlabel>
+                </div>
+                <div class="flex items-center px-4">
+                  <p-checkbox inputId="userStatus" [binary]="true" formControlName="isActive" />
+                  <label for="userStatus" class="ml-2"> Habilitado </label>
                 </div>
               </div>
 
@@ -158,6 +164,7 @@ export class UserEditor {
     fullName: ['', Validators.required],
     login: ['', Validators.required],
     roles: [[], Validators.required],
+    isActive: [true],
     relationKey: [],
     applicationIds: [[]],
   });

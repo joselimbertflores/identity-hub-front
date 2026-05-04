@@ -8,13 +8,16 @@ import { ApplicationResponse } from '../interfaces';
   providedIn: 'root',
 })
 export class ApplicationDataSource {
-  readonly URL = `${environment.baseUrl}/applications`;
+  readonly URL = `${environment.identityHubUrl}/api/applications`;
   private http = inject(HttpClient);
 
   constructor() {}
 
   create(form: object) {
-    return this.http.post<{ application: any; clientSecret: string }>(this.URL, form);
+    return this.http.post<{ application: ApplicationResponse; clientSecret: string }>(
+      this.URL,
+      form,
+    );
   }
 
   update(id: number, form: object) {

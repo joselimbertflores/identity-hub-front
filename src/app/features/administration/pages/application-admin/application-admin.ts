@@ -12,12 +12,13 @@ import { TagModule } from 'primeng/tag';
 import { ApplicationEditor, ClientSecretDialog } from '../../dialogs';
 import { ApplicationDataSource } from '../../services';
 import { SearchInput } from '../../../../shared';
+import { ApplicationResponse } from '../../interfaces';
 
 @Component({
   selector: 'app-application-admin',
   imports: [ButtonModule, TableModule, SearchInput, ConfirmDialogModule, MenuModule, TagModule],
   templateUrl: './application-admin.html',
-  providers: [ConfirmationService],
+  providers: [DialogService, ConfirmationService],
 })
 export default class ApplicationAdmin {
   private dialogService = inject(DialogService);
@@ -48,7 +49,7 @@ export default class ApplicationAdmin {
 
   menuItems: MenuItem[] = [];
 
-  openApplicationDialog(app?: any) {
+  openApplicationDialog(app?: ApplicationResponse) {
     const dialogRef = this.dialogService.open(ApplicationEditor, {
       header: app ? 'Editar sistema' : 'Crear sistema',
       modal: true,
@@ -62,16 +63,18 @@ export default class ApplicationAdmin {
         '640px': '90vw',
       },
     });
-    dialogRef?.onClose.subscribe((result?: { application: any; clientSecret?: string }) => {
-      if (!result) return;
-      if (result.clientSecret) {
-        this.showClientSecretDialog(result.application, result.clientSecret);
-      }
-      this.updateItemDataSource(result.application);
-    });
+    dialogRef?.onClose.subscribe(
+      (result?: { application: ApplicationResponse; clientSecret?: string }) => {
+        if (!result) return;
+        if (result.clientSecret) {
+          this.showClientSecretDialog(result.application, result.clientSecret);
+        }
+        this.updateItemDataSource(result.application);
+      },
+    );
   }
 
-  confirmRegenerateSecret(application: any) {
+  confirmRegenerateSecret(application: ApplicationResponse) {
     this.confirmationService.confirm({
       header: 'Regenerar secreto',
       message: `El secreto actual de "${application.name}" dejará de funcionar inmediatamente. ¿Deseas continuar?`,
@@ -90,7 +93,7 @@ export default class ApplicationAdmin {
     });
   }
 
-  openMenu(row: any) {
+  openMenu(row: ApplicationResponse) {
     this.menuItems = [
       {
         label: 'Opciones',
@@ -120,7 +123,7 @@ export default class ApplicationAdmin {
     this.offset.set(event.first);
   }
 
-  private updateItemDataSource(item: any): void {
+  private updateItemDataSource(item: ApplicationResponse): void {
     const index = this.dataSource().findIndex(({ id }) => item.id === id);
     if (index === -1) {
       this.dataSource.update((values) => [item, ...values]);
@@ -133,13 +136,13 @@ export default class ApplicationAdmin {
     }
   }
 
-  private regenerateSecret(application: any) {
+  private regenerateSecret(application: ApplicationResponse) {
     this.applicationApi.regenerateSecret(application.id).subscribe(({ clientSecret }) => {
       this.showClientSecretDialog(application, clientSecret);
     });
   }
 
-  private showClientSecretDialog(application: any, clientSecret: string): void {
+  private showClientSecretDialog(application: ApplicationResponse, clientSecret: string): void {
     this.dialogService.open(ClientSecretDialog, {
       header: 'Nuevo secreto generado',
       closeOnEscape: true,

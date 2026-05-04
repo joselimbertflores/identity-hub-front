@@ -6,6 +6,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 
+import { ApplicationResponse } from '../../interfaces';
+
 @Component({
   selector: 'app-client-secret-dialog',
   imports: [ButtonModule, ClipboardModule, UpperCasePipe],
@@ -47,7 +49,7 @@ export class ClientSecretDialog {
   readonly messageService = inject(MessageService);
 
   clientSecret = this.config.data.clientSecret;
-  application = this.config.data.application;
+  application: ApplicationResponse = this.config.data.application;
 
   copied = signal(false);
 

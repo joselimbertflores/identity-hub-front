@@ -11,13 +11,13 @@ import { UserResponse } from '../interfaces';
 })
 export class UserDataSource {
   private http = inject(HttpClient);
-  readonly URL = `${environment.baseUrl}/users`;
+  readonly URL = `${environment.identityHubUrl}/api/users`;
 
   findAll(limit: number, offset: number, term?: string) {
     const params = new HttpParams({
       fromObject: { limit, offset, ...(term && { term }) },
     });
-    return this.http.get<{ users: any[]; total: number }>(this.URL, {
+    return this.http.get<{ users: UserResponse[]; total: number }>(this.URL, {
       params,
     });
   }
@@ -38,7 +38,7 @@ export class UserDataSource {
       .post<{
         credentialsPdfBase64: string;
         message: string;
-      }>(`${this.URL}/users/${id}/reset-credentials`, {})
+      }>(`${this.URL}/${id}/reset-credentials`, {})
       .pipe(
         tap((resp) => this.showPdfFromBase64(resp.credentialsPdfBase64)),
         map((resp) => ({

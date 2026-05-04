@@ -10,7 +10,6 @@ export const isAuthenticatedGuard: CanActivateFn = () => {
   const authDataSource = inject(AuthDataSource);
 
   return authDataSource.checkAuthStatus().pipe(
-    // delay(3000),
     map((isAuth): boolean | UrlTree => {
       return isAuth ? true : router.createUrlTree(['/login']);
     }),

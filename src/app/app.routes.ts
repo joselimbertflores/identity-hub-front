@@ -18,14 +18,14 @@ export const routes: Routes = [
     path: 'change-password',
     title: 'Actualizar contraseña',
     canActivate: [canAccessChangePasswordGuard],
-    loadComponent: () => import('./features/administration/pages/change-password/change-password'),
+    loadComponent: () => import('./features/auth/pages/change-password-page/change-password-page'),
   },
   {
     path: 'home',
     title: 'Inicio',
     canActivate: [isAuthenticatedGuard],
     canActivateChild: [mustChangePasswordGuard],
-    loadComponent: () => import('./features/administration/layout/admin-layout/admin-layout'),
+    loadComponent: () => import('./layout/app-layout/app-layout'),
     children: [
       {
         path: 'users',
@@ -43,20 +43,21 @@ export const routes: Routes = [
           import('./features/administration/pages/application-admin/application-admin'),
       },
       {
+        path: 'apps',
+        title: 'Mis sistemas',
+        canActivate: [roleGuard],
+        data: { roles: ['USER'] },
+        loadComponent: () => import('./features/access-portal/pages/my-access-page/my-access-page'),
+      },
+      {
         path: 'welcome',
-        title: 'Bienvenido/a',
-        loadComponent: () => import('./features/administration/pages/welcome-page/welcome-page'),
+        title: 'Bienvenida',
+        loadComponent: () => import('./features/workspace/pages/welcome-page/welcome-page'),
       },
       {
         path: 'settings',
         title: 'Configuraciones',
-        loadComponent: () => import('./features/administration/pages/settings-page/settings-page'),
-      },
-
-      {
-        path: 'apps',
-        title: 'Mis sistemas',
-        loadComponent: () => import('./features/access-portal/pages/my-access/my-access'),
+        loadComponent: () => import('./features/workspace/pages/settings-page/settings-page'),
       },
       { path: '', redirectTo: 'welcome', pathMatch: 'full' },
     ],

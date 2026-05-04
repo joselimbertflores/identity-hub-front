@@ -1,7 +1,7 @@
 <div class="flex h-screen bg-surface-50 overflow-hidden">
   @if (!isMobile()) {
     <aside class="w-64 shrink-0 border-r border-surface-200 bg-surface-0">
-      <admin-sidebar [user]="user()" />
+      <app-sidebar [user]="user()" />
     </aside>
   }
   <div class="flex-1 flex flex-col min-w-0">
@@ -28,7 +28,7 @@
   styleClass="w-64 bg-surface-0"
   (onHide)="closeMobileMenu()"
 >
-  <admin-sidebar [user]="user()" />
+  <app-sidebar [user]="user()" />
 </p-drawer>
 
 <p-toast [breakpoints]="{ '921px': { width: '90%', right: '10', left: '10' } }" />

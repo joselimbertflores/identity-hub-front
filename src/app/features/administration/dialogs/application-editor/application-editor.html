@@ -41,13 +41,7 @@
     </div>
     <div>
       <p-floatlabel variant="on">
-        <input
-          id="code"
-          [fluid]="true"
-          pInputText
-          autocomplete="off"
-          formControlName="clientId"
-        />
+        <input id="code" [fluid]="true" pInputText autocomplete="off" formControlName="clientId" />
         <label for="code">Identificador unico</label>
       </p-floatlabel>
     </div>
@@ -64,9 +58,13 @@
       </p-floatlabel>
     </div>
 
-    <div class="flex items-center gap-x-2">
-      <span>Color:</span>
+    <div class="flex items-center gap-x-2 px-2">
+      <span>Seleccione un Color:</span>
       <p-colorpicker formControlName="color" appendTo="body" />
+    </div>
+    <div class="flex items-center px-4">
+      <p-checkbox inputId="userStatus" [binary]="true" formControlName="isActive" />
+      <label for="userStatus" class="ml-2"> Habilitado </label>
     </div>
   </div>
   <div class="p-dialog-footer">

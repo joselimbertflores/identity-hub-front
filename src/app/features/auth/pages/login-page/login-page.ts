@@ -180,7 +180,7 @@ export default class LoginPage {
     const form = document.createElement('form');
     form.method = 'POST';
 
-    let action = `${environment.baseUrl}/oauth/login`;
+    let action = `${environment.identityHubUrl}/oauth/login`;
     if (authRequestId) {
       action += `?auth_request_id=${authRequestId}`;
     }

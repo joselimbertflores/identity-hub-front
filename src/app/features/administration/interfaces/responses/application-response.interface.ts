@@ -4,7 +4,6 @@ export interface ApplicationResponse {
   name: string;
   description: string;
   launchUrl: string;
-  clientSecret: string;
   isConfidential: boolean;
   isActive: boolean;
   createdAt: string;

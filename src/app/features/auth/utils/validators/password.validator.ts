@@ -1,5 +1,13 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
+export const PASSWORD_RULES = {
+  minLength: 8,
+  lowercase: /[a-z]/,
+  uppercase: /[A-Z]/,
+  number: /\d/,
+  symbol: /[^\w\s]/,
+} as const;
+
 export function passwordStrengthValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value ?? '';
@@ -8,10 +16,10 @@ export function passwordStrengthValidator(): ValidatorFn {
 
     const errors: ValidationErrors = {};
 
-    if (!/[a-z]/.test(value)) errors['missingLowercase'] = true;
-    if (!/[A-Z]/.test(value)) errors['missingUppercase'] = true;
-    if (!/\d/.test(value)) errors['missingNumber'] = true;
-    if (!/[^\w\s]/.test(value)) errors['missingSymbol'] = true;
+    if (!PASSWORD_RULES.lowercase.test(value)) errors['missingLowercase'] = true;
+    if (!PASSWORD_RULES.uppercase.test(value)) errors['missingUppercase'] = true;
+    if (!PASSWORD_RULES.number.test(value)) errors['missingNumber'] = true;
+    if (!PASSWORD_RULES.symbol.test(value)) errors['missingSymbol'] = true;
 
     return Object.keys(errors).length ? errors : null;
   };

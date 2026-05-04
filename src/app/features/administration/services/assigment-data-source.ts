@@ -10,7 +10,7 @@ import { ApplicationResponse } from '../interfaces';
   providedIn: 'root',
 })
 export class AssigmentDataSource {
-  readonly URL = `${environment.baseUrl}/assigment`;
+  readonly URL = `${environment.identityHubUrl}/api/assigment`;
   private http = inject(HttpClient);
 
   applications = toSignal(this.http.get<ApplicationResponse[]>(`${this.URL}/applications`), {

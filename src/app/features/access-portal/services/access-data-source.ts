@@ -8,12 +8,10 @@ import { AssginedAppsResponse } from '../interfaces';
   providedIn: 'root',
 })
 export class AccessDataSource {
-  private readonly URL = `${environment.baseUrl}/hub`;
+  private readonly URL = `${environment.identityHubUrl}/api/access-portal`;
   private http = inject(HttpClient);
 
-  constructor() {}
-
-  getMyApplicationms() {
-    return this.http.get<AssginedAppsResponse[]>(`${this.URL}/access`, { withCredentials: true });
+  getMyApplications() {
+    return this.http.get<AssginedAppsResponse[]>(`${this.URL}/my-applications`);
   }
 }

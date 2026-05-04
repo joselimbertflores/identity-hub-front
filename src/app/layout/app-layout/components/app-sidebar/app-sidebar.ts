@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { AuthUserResponse } from '../../../../../../core/auth/auth.types';
-import { MENU_ACTIONS } from '../../../../constants/menu.config';
-import { AppIcon } from '../../../../../../shared';
+import { AuthUserResponse } from '../../../../core/auth/auth.types';
+import { MENU_ACTIONS } from '../../../../features/administration/constants/menu.config';
+import { AppIcon } from '../../../../shared';
 
 @Component({
-  selector: 'admin-sidebar',
+  selector: 'app-sidebar',
   imports: [RouterModule, AppIcon],
   template: `
     <nav class="h-full flex flex-col">
@@ -41,7 +41,7 @@ import { AppIcon } from '../../../../../../shared';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminSidebar {
+export class AppSidebar {
   user = input.required<AuthUserResponse | null>();
   menu = computed(() =>
     MENU_ACTIONS.filter((item) =>

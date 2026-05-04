@@ -10,10 +10,10 @@ import { MenuModule } from 'primeng/menu';
 import { TagModule } from 'primeng/tag';
 import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 
-import { UserEditor } from '../../dialogs';
 import { SearchInput } from '../../../../shared';
 import { UserDataSource } from '../../services';
 import { UserResponse } from '../../interfaces';
+import { UserEditor } from '../../dialogs';
 
 @Component({
   selector: 'app-user-admin',
@@ -27,7 +27,7 @@ import { UserResponse } from '../../interfaces';
     ConfirmDialogModule,
   ],
   templateUrl: './user-admin.html',
-  providers: [ConfirmationService],
+  providers: [DialogService, ConfirmationService],
 })
 export default class UserAdmin {
   private dialogService = inject(DialogService);

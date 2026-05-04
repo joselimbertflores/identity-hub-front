@@ -7,6 +7,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
 import { MessageModule } from 'primeng/message';
 import { ButtonModule } from 'primeng/button';
 
@@ -25,6 +26,7 @@ import { FormUtils } from '../../../../helpers';
     AutoCompleteModule,
     ColorPickerModule,
     MessageModule,
+    CheckboxModule,
   ],
   templateUrl: './application-editor.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

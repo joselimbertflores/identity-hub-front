@@ -7,11 +7,11 @@ import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { ToastModule } from 'primeng/toast';
 
-import { ProfileOverlay, AdminSidebar } from './components';
-import { AuthDataSource } from '../../../../core';
+import { ProfileOverlay, AppSidebar } from './components';
+import { AuthDataSource } from '../../core';
 
 @Component({
-  selector: 'app-admin-layout',
+  selector: 'app-app-layout',
   imports: [
     RouterModule,
     DrawerModule,
@@ -19,12 +19,12 @@ import { AuthDataSource } from '../../../../core';
     AvatarModule,
     ProfileOverlay,
     ToastModule,
-    AdminSidebar,
+    AppSidebar,
   ],
-  templateUrl: './admin-layout.html',
+  templateUrl: './app-layout.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class AdminLayout {
+export default class AppLayout {
   private authDataSource = inject(AuthDataSource);
   
   isMobile = signal(false);
