@@ -22,7 +22,7 @@ import { AuthDataSource } from '../../../../core';
           Su sesión está activa en el Sistema Institucional de Autenticación y Acceso.
         </p>
 
-        <div class="mt-16 pt-8 border-t border-surface-200 flex justify-center">
+        <div class="mt-12 pt-8 border-t border-surface-200 flex justify-center">
           <div class="flex items-center gap-2 text-surface-400">
             <i class="pi pi-code"></i>
             <span class="text-sm font-semibold">Versión 1.0.0</span>

@@ -21,6 +21,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/pages/change-password-page/change-password-page'),
   },
   {
+    path: 'auth/error',
+    loadComponent: () => import('./features/auth/pages/auth-error-page/auth-error-page'),
+  },
+  {
     path: 'home',
     title: 'Inicio',
     canActivate: [isAuthenticatedGuard],
