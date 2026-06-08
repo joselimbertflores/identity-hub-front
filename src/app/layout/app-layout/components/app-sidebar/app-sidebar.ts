@@ -44,8 +44,14 @@ import { AppIcon } from '../../../../shared';
 export class AppSidebar {
   user = input.required<AuthUserResponse | null>();
   menu = computed(() =>
-    MENU_ACTIONS.filter((item) =>
-      (item['roles'] as string[]).some((role) => this.user()?.roles.includes(role)),
-    ),
+    MENU_ACTIONS.filter((item) => {
+      const roles = item['roles'] as string[] | undefined;
+
+      if (!roles || roles.length === 0) {
+        return true;
+      }
+
+      return roles.some((role) => this.user()?.roles.includes(role));
+    }),
   );
 }

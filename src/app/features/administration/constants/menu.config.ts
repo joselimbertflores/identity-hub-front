@@ -17,6 +17,5 @@ export const MENU_ACTIONS: MenuItem[] = [
     label: 'Mis sistemas',
     routerLink: '/home/apps',
     icon: 'pi-th-large',
-    roles: ['USER'],
   },
 ];

@@ -49,8 +49,6 @@ export const routes: Routes = [
       {
         path: 'apps',
         title: 'Mis sistemas',
-        canActivate: [roleGuard],
-        data: { roles: ['USER'] },
         loadComponent: () => import('./features/access-portal/pages/my-access-page/my-access-page'),
       },
       {
