@@ -181,8 +181,9 @@ export default class LoginPage {
     form.method = 'POST';
 
     let action = `${environment.identityHubUrl}/oauth/login`;
+
     if (authRequestId) {
-      action += `?auth_request_id=${authRequestId}`;
+      action += `?auth_request_id=${encodeURIComponent(authRequestId)}`;
     }
 
     form.action = action;
@@ -222,7 +223,12 @@ export default class LoginPage {
         const message = ERROR_MESSAGES[error] ?? 'No se pudo iniciar sesión.';
         this.showMessage(message, 5000);
 
-        this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { error: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
       }
     });
   }
