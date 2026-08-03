@@ -52,7 +52,7 @@
             [rounded]="true"
             icon="pi pi-ellipsis-v"
             size="small"
-            (click)="openMenu(item, $event); menu.toggle($event)"
+            (click)="openMenu(item); menu.toggle($event)"
           />
         </td>
       </tr>
@@ -60,4 +60,3 @@
   </p-table>
   <p-menu #menu [popup]="true" appendTo="body" [model]="menuItems"></p-menu>
 </div>
-<p-confirmdialog />

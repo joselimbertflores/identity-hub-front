@@ -1,9 +1,16 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, inject, Injectable, linkedSignal, signal } from '@angular/core';
 import { catchError, map, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { AuthUserResponse } from './auth.types';
+import {
+  AuthUserResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
+  CompletePasswordActionRequest,
+  ForgotPasswordRequest,
+  MessageResponse,
+} from './auth.types';
 
 @Injectable({
   providedIn: 'root',
@@ -30,16 +37,26 @@ export class AuthDataSource {
     );
   }
 
-  changePassword(password: string) {
+  changePassword(request: ChangePasswordRequest, authRequestId?: string) {
+    const params = authRequestId
+      ? new HttpParams().set('auth_request_id', authRequestId)
+      : undefined;
+
     return this.http
-      .patch<{ message: string }>(`${this.URL}/change-password`, {
-        password,
-      })
+      .patch<ChangePasswordResponse>(`${this.URL}/change-password`, request, { params })
       .pipe(
         tap(() => {
           this._mustChangePassword.set(false);
         }),
       );
+  }
+
+  forgotPassword(request: ForgotPasswordRequest) {
+    return this.http.post<MessageResponse>(`${this.URL}/forgot-password`, request);
+  }
+
+  completePasswordAction(request: CompletePasswordActionRequest) {
+    return this.http.post<MessageResponse>(`${this.URL}/password-actions/complete`, request);
   }
 
   logout() {

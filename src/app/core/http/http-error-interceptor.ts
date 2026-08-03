@@ -56,7 +56,7 @@ function getMessageConfig(error: HttpErrorResponse): ToastMessageOptions | null 
       return {
         severity: 'error',
         summary: 'Error interno',
-        detail,
+        detail: 'No se pudo procesar la solicitud.',
       };
 
     default:

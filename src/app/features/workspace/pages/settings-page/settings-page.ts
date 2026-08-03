@@ -1,72 +1,52 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
-
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { PasswordModule } from 'primeng/password';
-import { MessageModule } from 'primeng/message';
-import { ButtonModule } from 'primeng/button';
-
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { MessageModule } from 'primeng/message';
+
 import { AuthDataSource } from '../../../../core';
-import { FormUtils } from '../../../../helpers';
-import {
-  passwordMatchValidator,
-  passwordStrengthValidator,
-} from '../../../auth/utils/validators/password.validator';
+import { ChangePasswordRequest } from '../../../../core/auth/auth.types';
+import { PasswordChangeForm } from '../../../auth/components/password-change-form/password-change-form';
+import { getAuthErrorMessage } from '../../../auth/utils/auth-error';
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ReactiveFormsModule, PasswordModule, ButtonModule, FloatLabelModule, MessageModule],
+  imports: [MessageModule, PasswordChangeForm],
   templateUrl: './settings-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SettingsPage {
-  private authDataSource = inject(AuthDataSource);
+  private readonly authDataSource = inject(AuthDataSource);
+  private readonly route = inject(ActivatedRoute);
+  private readonly passwordForm = viewChild(PasswordChangeForm);
 
-  formUtils = FormUtils;
-  userForm: FormGroup = inject(FormBuilder).group(
-    {
-      password: ['', [Validators.required, Validators.minLength(8), passwordStrengthValidator()]],
-      confirmPassword: ['', Validators.required],
-    },
-    { validators: [passwordMatchValidator()] },
-  );
+  readonly user = this.authDataSource.user;
+  readonly successMessage = signal<string | null>(null);
+  readonly errorMessage = signal<string | null>(null);
+  readonly isSaving = signal(false);
 
-  user = this.authDataSource.user;
+  save(request: ChangePasswordRequest): void {
+    if (this.isSaving()) return;
 
-  readonly passwordMessages = {
-    required: 'La nueva contraseña es obligatoria.',
-    minlength: 'Debe tener al menos 8 caracteres.',
-    missingLowercase: 'Debe incluir una letra minúscula.',
-    missingUppercase: 'Debe incluir una letra mayúscula.',
-    missingNumber: 'Debe incluir un número.',
-    missingSymbol: 'Debe incluir un símbolo.',
-  };
-
-  displayMessage = signal(false);
-  isSaving = signal(false);
-
-  save() {
-    if (this.userForm.invalid || this.isSaving()) {
-      this.userForm.markAllAsTouched();
-      return;
-    }
+    const authRequestId = this.route.snapshot.queryParamMap.get('auth_request_id') ?? undefined;
     this.isSaving.set(true);
-    const { password } = this.userForm.value;
-    this.authDataSource
-      .changePassword(password)
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe(() => {
-        this.userForm.reset();
-        this.showMessage();
-      });
-  }
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
 
-  private showMessage() {
-    this.displayMessage.set(true);
-    setTimeout(() => {
-      this.displayMessage.set(false);
-    }, 3000);
+    this.authDataSource
+      .changePassword(request, authRequestId)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: ({ redirectUrl }) => {
+          this.passwordForm()?.reset();
+          if (authRequestId) {
+            window.location.assign(redirectUrl);
+            return;
+          }
+          this.successMessage.set('La contraseña fue cambiada correctamente.');
+        },
+        error: (error: HttpErrorResponse) => this.errorMessage.set(getAuthErrorMessage(error)),
+      });
   }
 }

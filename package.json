@@ -33,6 +33,7 @@
     "@primeuix/themes": "^2.0.2",
     "primeicons": "^7.0.0",
     "primeng": "^21.1.6",
+    "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "tailwindcss-primeui": "^0.6.1",
     "tslib": "^2.3.0"
@@ -42,6 +43,7 @@
     "@angular/cli": "^21.2.7",
     "@angular/compiler-cli": "^21.2.8",
     "@tailwindcss/postcss": "^4.1.12",
+    "@types/qrcode": "^1.5.5",
     "jsdom": "^27.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.12",

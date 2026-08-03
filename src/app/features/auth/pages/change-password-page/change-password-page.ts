@@ -1,110 +1,58 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs';
 
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { PasswordModule } from 'primeng/password';
-import { MessageModule } from 'primeng/message';
-import { ButtonModule } from 'primeng/button';
-import { MessageService } from 'primeng/api';
-
-import { FormUtils } from '../../../../helpers';
-import {
-  PASSWORD_RULES,
-  passwordMatchValidator,
-  passwordStrengthValidator,
-} from '../../utils/validators/password.validator';
 import { AuthDataSource } from '../../../../core';
+import { ChangePasswordRequest } from '../../../../core/auth/auth.types';
+import { PasswordChangeForm } from '../../components/password-change-form/password-change-form';
+import { getAuthErrorMessage } from '../../utils/auth-error';
 
 @Component({
   selector: 'app-change-password-page',
-  imports: [ReactiveFormsModule, PasswordModule, ButtonModule, FloatLabelModule, MessageModule],
+  imports: [PasswordChangeForm],
   templateUrl: './change-password-page.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class ChangePasswordPage {
-  private router = inject(Router);
-  private authDataSource = inject(AuthDataSource);
-  private messageService = inject(MessageService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly authDataSource = inject(AuthDataSource);
+  private readonly passwordForm = viewChild(PasswordChangeForm);
 
-  form: FormGroup = inject(FormBuilder).nonNullable.group(
-    {
-      password: ['', [Validators.required, Validators.minLength(8), passwordStrengthValidator()]],
-      confirmPassword: ['', Validators.required],
-    },
-    { validators: [passwordMatchValidator()] },
-  );
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+  private readonly authRequestId =
+    this.route.snapshot.queryParamMap.get('auth_request_id') ?? undefined;
 
-  isLoading = signal(false);
-  formUtils = FormUtils;
-
-  readonly passwordMessages = {
-    required: 'La nueva contraseña es obligatoria.',
-    minlength: 'Debe tener al menos 8 caracteres.',
-    missingLowercase: 'Debe incluir una letra minúscula.',
-    missingUppercase: 'Debe incluir una letra mayúscula.',
-    missingNumber: 'Debe incluir un número.',
-    missingSymbol: 'Debe incluir un símbolo.',
-  };
-
-  private readonly passwordValue = toSignal(this.form.controls['password'].valueChanges, {
-    initialValue: this.form.controls['password'].value,
-  });
-
-  readonly passwordRequirements = computed(() => {
-    const password = this.passwordValue();
-    return [
-      {
-        label: 'Mínimo 8 caracteres.',
-        valid: password.length >= PASSWORD_RULES.minLength,
-      },
-      {
-        label: 'Al menos una letra mayúscula.',
-        valid: PASSWORD_RULES.uppercase.test(password),
-      },
-      {
-        label: 'Al menos una letra minúscula.',
-        valid: PASSWORD_RULES.lowercase.test(password),
-      },
-      {
-        label: 'Al menos un número.',
-        valid: PASSWORD_RULES.number.test(password),
-      },
-      {
-        label: 'Al menos un símbolo.',
-        valid: PASSWORD_RULES.symbol.test(password),
-      },
-    ];
-  });
-
-  submit(): void {
+  submit(request: ChangePasswordRequest): void {
     if (this.isLoading()) return;
 
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+    this.authDataSource
+      .changePassword(request, this.authRequestId)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: ({ redirectUrl }) => {
+          this.passwordForm()?.reset();
+          this.navigateToRedirect(redirectUrl);
+        },
+        error: (error: HttpErrorResponse) => this.errorMessage.set(getAuthErrorMessage(error)),
+      });
+  }
+
+  private navigateToRedirect(redirectUrl: string): void {
+    try {
+      const target = new URL(redirectUrl, window.location.origin);
+      if (target.protocol === 'http:' || target.protocol === 'https:') {
+        window.location.assign(target.href);
+        return;
+      }
+    } catch {
+      // A malformed backend redirect falls back to the authenticated home.
     }
 
-    this.isLoading.set(true);
-
-    const { password } = this.form.value;
-
-    this.authDataSource.changePassword(password).subscribe({
-      next: () => {
-        this.form.reset();
-        this.isLoading.set(false);
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Cambios guardados',
-          detail: 'La contraseña ha sido actualizada.',
-        });
-
-        this.router.navigateByUrl('/home/welcome');
-      },
-      error: () => {
-        this.isLoading.set(false);
-      },
-    });
+    void this.router.navigateByUrl('/home/welcome');
   }
 }

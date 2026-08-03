@@ -1,74 +1,32 @@
-<div class="max-w-4xl mx-auto p-2 md:p-4">
+<div class="mx-auto max-w-4xl p-2 md:p-4">
   <div class="mb-8">
-    <h1 class="text-lg sm:text-2xl font-bold text-surface-900">Configuracion del usuario</h1>
-    <p class="max-w-2xl text-sm/6">Cambie sus datos de acceso</p>
+    <h1 class="text-lg font-bold text-surface-900 sm:text-2xl">Configuración del usuario</h1>
+    <p class="max-w-2xl text-sm/6 text-surface-600">Administre sus datos de acceso.</p>
   </div>
-  @if (displayMessage()) {
-    <div class="mt-6 mb-8">
-      <p-message [life]="3000" severity="success"> Cambios guardados correctamente </p-message>
-    </div>
-  }
+
   <dl class="-my-3 divide-y divide-surface-200 text-sm">
     <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
       <dt class="font-medium text-surface-900">Nombre</dt>
       <dd class="text-surface-700 sm:col-span-2">{{ user()?.fullName }}</dd>
     </div>
-    <div class="grid grid-cols-1 gap-2 py-4 sm:grid-cols-3 sm:gap-4">
-      <dt class="font-medium text-surface-900">Contraseña</dt>
+    <div class="grid grid-cols-1 gap-3 py-5 sm:grid-cols-3 sm:gap-4">
+      <div>
+        <dt class="font-medium text-surface-900">Cambiar contraseña</dt>
+        <p class="mt-1 text-sm leading-5 text-surface-500">
+          La sesión actual se conservará después del cambio.
+        </p>
+      </div>
       <dd class="sm:col-span-2">
-        <form [formGroup]="userForm" (ngSubmit)="save()">
-          <div class="flex flex-col gap-y-6">
-            <div class="flex flex-col gap-1">
-              <p-floatlabel variant="on">
-                <p-password
-                  inputId="password"
-                  [toggleMask]="true"
-                  [feedback]="false"
-                  [fluid]="true"
-                  formControlName="password"
-                  autocomplete="off"
-                />
-                <label for="password">Nueva contraseña</label>
-              </p-floatlabel>
-              @let passwordCtrl = userForm.get('password');
-              @if (formUtils.isInvalid(passwordCtrl)) {
-                <p-message severity="error" variant="simple" size="small">
-                  {{ formUtils.getErrorMessage(passwordCtrl, passwordMessages) }}
-                </p-message>
-              }
-            </div>
-            <div class="flex flex-col gap-1">
-              <p-floatlabel variant="on">
-                <p-password
-                  inputId="confirmPassword"
-                  [toggleMask]="true"
-                  [feedback]="false"
-                  [fluid]="true"
-                  formControlName="confirmPassword"
-                  autocomplete="off"
-                />
-                <label for="confirmPassword">Confirmar contraseña</label>
-              </p-floatlabel>
-              @let confirmPasswordCtrl = userForm.get('confirmPassword');
-              @if (formUtils.isInvalid(confirmPasswordCtrl)) {
-                <p-message severity="error" variant="simple" size="small">
-                  {{ formUtils.getErrorMessage(confirmPasswordCtrl) }}
-                </p-message>
-              } @else if (
-                (confirmPasswordCtrl?.touched || confirmPasswordCtrl?.dirty) &&
-                userForm.hasError('passwordMismatch')
-              ) {
-                <p-message severity="error" variant="simple" size="small">
-                  Las contraseñas no coinciden.
-                </p-message>
-              }
-            </div>
-          </div>
-
-          <div class="flex justify-end mt-6">
-            <p-button [loading]="isSaving()" label="Guardar" type="submit" />
-          </div>
-        </form>
+        @if (successMessage()) {
+          <p-message severity="success" class="mb-5 w-full" aria-live="polite">
+            {{ successMessage() }}
+          </p-message>
+        }
+        <app-password-change-form
+          [loading]="isSaving()"
+          [errorMessage]="errorMessage()"
+          (submitted)="save($event)"
+        />
       </dd>
     </div>
   </dl>

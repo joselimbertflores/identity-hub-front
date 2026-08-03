@@ -21,6 +21,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/pages/change-password-page/change-password-page'),
   },
   {
+    path: 'forgot-password',
+    title: 'Recuperar contraseña',
+    loadComponent: () => import('./features/auth/pages/forgot-password-page/forgot-password-page'),
+  },
+  {
+    path: 'set-password',
+    title: 'Establecer contraseña',
+    loadComponent: () => import('./features/auth/pages/set-password-page/set-password-page'),
+  },
+  {
     path: 'auth/error',
     loadComponent: () => import('./features/auth/pages/auth-error-page/auth-error-page'),
   },

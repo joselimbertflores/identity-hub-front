@@ -1,44 +1,33 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 
-import { TableModule, TablePageEvent } from 'primeng/table';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { DialogService } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
+import { DialogService } from 'primeng/dynamicdialog';
+import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
+import { TableModule, TablePageEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 
 import { SearchInput } from '../../../../shared';
-import { UserDataSource } from '../../services';
+import { PasswordActionDialog, PasswordActionOperation, UserEditor } from '../../dialogs';
 import { UserResponse } from '../../interfaces';
-import { UserEditor } from '../../dialogs';
+import { UserDataSource } from '../../services';
 
 @Component({
   selector: 'app-user-admin',
-  imports: [
-    CommonModule,
-    ButtonModule,
-    TableModule,
-    SearchInput,
-    MenuModule,
-    TagModule,
-    ConfirmDialogModule,
-  ],
+  imports: [CommonModule, ButtonModule, TableModule, SearchInput, MenuModule, TagModule],
   templateUrl: './user-admin.html',
-  providers: [DialogService, ConfirmationService],
+  providers: [DialogService],
 })
 export default class UserAdmin {
-  private dialogService = inject(DialogService);
-  private userApi = inject(UserDataSource);
-  private confirmationService = inject(ConfirmationService);
-  private messageService = inject(MessageService);
+  private readonly dialogService = inject(DialogService);
+  private readonly userApi = inject(UserDataSource);
 
-  limit = signal(10);
-  offset = signal(0);
-  searchTerm = signal('');
-  roleResource = rxResource({
+  readonly limit = signal(10);
+  readonly offset = signal(0);
+  readonly searchTerm = signal('');
+  readonly roleResource = rxResource({
     params: () => ({
       offset: this.offset(),
       limit: this.limit(),
@@ -47,77 +36,65 @@ export default class UserAdmin {
     stream: ({ params }) => this.userApi.findAll(params.limit, params.offset, params.term),
   });
 
-  dataSource = linkedSignal(() => {
+  readonly dataSource = linkedSignal(() => {
     if (!this.roleResource.hasValue()) return [];
     return this.roleResource.value().users;
   });
 
-  dataSize = linkedSignal(() => {
+  readonly dataSize = linkedSignal(() => {
     if (!this.roleResource.hasValue()) return 0;
     return this.roleResource.value().total;
   });
 
-  menuOptions = signal<MenuItem[]>([]);
+  readonly menuOptions = signal<MenuItem[]>([]);
   menuItems: MenuItem[] = [];
 
-  openUserDialog(user?: UserResponse) {
+  openUserDialog(user?: UserResponse): void {
     const dialogRef = this.dialogService.open(UserEditor, {
       header: user ? 'Editar usuario' : 'Crear usuario',
       modal: true,
       draggable: false,
-      closeOnEscape: true,
-      closable: true,
-      width: '40vw',
+      closeOnEscape: false,
+      closable: false,
+      width: '44rem',
       data: user,
       breakpoints: {
         '960px': '75vw',
-        '640px': '90vw',
+        '640px': '94vw',
       },
     });
     dialogRef?.onClose.subscribe((result?: UserResponse) => {
-      if (!result) return;
-      this.updateItemDataSource(result);
+      if (result) this.updateItemDataSource(result);
     });
   }
 
-  resetCrendentials(user: UserResponse, event: Event) {
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      header: '¿Restablecer credenciales?',
-      message: 'El usuario debera cambiar nuevamente sus credenciales',
-      rejectButtonProps: {
-        label: 'Cancelar',
-        severity: 'secondary',
-        outlined: true,
-      },
-      acceptButtonProps: {
-        label: 'Aceptar',
-        severity: 'primary',
-      },
-      accept: () => {
-        this.userApi.resetCredentials(user.id).subscribe(() => {
-          this.messageService.add({
-            summary: 'Credenciales restablecidas',
-            detail: 'El cambio de contraseña es requerido',
-            severity: 'success',
-            life: 2000,
-          });
-        });
+  openPasswordActionDialog(user: UserResponse, operation: PasswordActionOperation): void {
+    this.dialogService.open(PasswordActionDialog, {
+      header: operation === 'reset' ? 'Restablecer contraseña' : 'Regenerar enlace o código',
+      modal: true,
+      draggable: false,
+      closeOnEscape: false,
+      closable: false,
+      width: '46rem',
+      data: { user, operation },
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '94vw',
       },
     });
   }
 
-  search(term: string) {
+  search(term: string): void {
     this.offset.set(0);
     this.searchTerm.set(term);
   }
 
-  changePage(event: TablePageEvent) {
+  changePage(event: TablePageEvent): void {
     this.limit.set(event.rows);
     this.offset.set(event.first);
   }
 
-  openMenu(row: UserResponse, event: Event) {
+  openMenu(row: UserResponse): void {
     this.menuItems = [
       {
         label: 'Opciones',
@@ -128,9 +105,14 @@ export default class UserAdmin {
             command: () => this.openUserDialog(row),
           },
           {
-            label: 'Restablecer credenciales',
+            label: 'Restablecer contraseña',
             icon: 'pi pi-sync',
-            command: () => this.resetCrendentials(row, event),
+            command: () => this.openPasswordActionDialog(row, 'reset'),
+          },
+          {
+            label: 'Regenerar enlace o código',
+            icon: 'pi pi-refresh',
+            command: () => this.openPasswordActionDialog(row, 'regenerate'),
           },
         ],
       },
@@ -141,12 +123,13 @@ export default class UserAdmin {
     const index = this.dataSource().findIndex(({ id }) => item.id === id);
     if (index === -1) {
       this.dataSource.update((values) => [item, ...values]);
-      this.dataSize.update((value) => (value += 1));
-    } else {
-      this.dataSource.update((values) => {
-        values[index] = item;
-        return [...values];
-      });
+      this.dataSize.update((value) => value + 1);
+      return;
     }
+
+    this.dataSource.update((values) => {
+      values[index] = item;
+      return [...values];
+    });
   }
 }

@@ -1,7 +1,7 @@
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -27,6 +27,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     ButtonModule,
     Message,
     AppIcon,
+    RouterLink,
   ],
   template: `
     <main class="flex min-h-screen flex-col bg-surface-50 text-surface-900">
@@ -111,6 +112,15 @@ const ERROR_MESSAGES: Record<string, string> = {
                 </div>
               </fieldset>
 
+              <div class="text-right">
+                <a
+                  routerLink="/forgot-password"
+                  class="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline"
+                >
+                  Olvidé mi contraseña
+                </a>
+              </div>
+
               @if (errorMessage()) {
                 <p-message
                   severity="error"
@@ -120,6 +130,18 @@ const ERROR_MESSAGES: Record<string, string> = {
                   icon="pi pi-times-circle"
                 >
                   {{ errorMessage() }}
+                </p-message>
+              }
+
+              @if (successMessage()) {
+                <p-message
+                  severity="success"
+                  class="w-full"
+                  aria-live="polite"
+                  role="status"
+                  icon="pi pi-check-circle"
+                >
+                  {{ successMessage() }}
                 </p-message>
               }
 
@@ -152,6 +174,7 @@ export default class LoginPage {
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
 
   errorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
   hidePassword = true;
   loginForm: FormGroup = this._formBuilder.group({
     login: ['', Validators.required],
@@ -164,6 +187,7 @@ export default class LoginPage {
   ngOnInit(): void {
     this.loadForm();
     this.handleLoginErrorMessages();
+    this.handlePasswordActionCompleted();
   }
 
   login() {
@@ -231,6 +255,15 @@ export default class LoginPage {
         });
       }
     });
+  }
+
+  private handlePasswordActionCompleted(): void {
+    const navigationState = window.history.state as { passwordActionCompleted?: unknown };
+    if (navigationState.passwordActionCompleted === true) {
+      this.successMessage.set(
+        'La contraseña fue establecida correctamente. Ya puede iniciar sesión.',
+      );
+    }
   }
 
   private showMessage(text: string, life = 3000): void {
