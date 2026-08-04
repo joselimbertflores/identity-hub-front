@@ -29,7 +29,7 @@ export class UserDataSource {
   }
 
   create(request: SaveUserRequest) {
-    return this.http.post<CreateUserResponse>(this.URL, request);
+    return this.http.post<CreateUserResponse>(`${this.URL}/access`, request);
   }
 
   update(id: string, request: SaveUserRequest) {
@@ -40,10 +40,7 @@ export class UserDataSource {
     return this.http.post<PasswordActionResponse>(`${this.URL}/${id}/password-reset`, {});
   }
 
-  regeneratePasswordAction(id: string) {
-    return this.http.post<PasswordActionResponse>(
-      `${this.URL}/${id}/password-action/regenerate`,
-      {},
-    );
+  resendPasswordAction(id: string) {
+    return this.http.post<PasswordActionResponse>(`${this.URL}/${id}/password-action/resend`, {});
   }
 }

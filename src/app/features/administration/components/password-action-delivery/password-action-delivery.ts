@@ -5,7 +5,7 @@ import { MessageModule } from 'primeng/message';
 import { PasswordActionDelivery, PasswordActionManualDetails } from '../../interfaces';
 import { ManualPasswordAction } from '../manual-password-action/manual-password-action';
 
-export type PasswordActionContext = 'create' | 'reset' | 'regenerate';
+export type PasswordActionContext = 'create' | 'reset' | 'resend';
 
 @Component({
   selector: 'app-password-action-delivery',
@@ -65,7 +65,7 @@ export class PasswordActionDeliveryView {
         return 'Usuario creado y enlace de configuración enviado al correo registrado.';
       case 'reset':
         return 'La contraseña anterior dejó de funcionar y el enlace de recuperación fue enviado al correo registrado.';
-      case 'regenerate':
+      case 'resend':
         return 'El enlace anterior fue invalidado y el nuevo enlace fue enviado al correo registrado.';
     }
   });
@@ -76,7 +76,7 @@ export class PasswordActionDeliveryView {
         return 'El usuario fue creado, pero no se pudo enviar el correo.';
       case 'reset':
         return 'La contraseña anterior dejó de funcionar, pero no se pudo enviar el correo.';
-      case 'regenerate':
+      case 'resend':
         return 'El enlace anterior fue invalidado, pero no se pudo enviar el correo.';
     }
   });

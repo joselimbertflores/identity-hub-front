@@ -7,10 +7,10 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MessageModule } from 'primeng/message';
 
 import { PasswordActionDeliveryView } from '../../components/password-action-delivery/password-action-delivery';
-import { PasswordActionDelivery, UserResponse } from '../../interfaces';
+import { PasswordActionDelivery, PasswordActionPurpose, UserResponse } from '../../interfaces';
 import { UserDataSource } from '../../services';
 
-export type PasswordActionOperation = 'reset' | 'regenerate';
+export type PasswordActionOperation = 'reset' | 'resend';
 
 interface PasswordActionDialogData {
   user: UserResponse;
@@ -71,23 +71,24 @@ export class PasswordActionDialog {
   readonly data = inject(DynamicDialogConfig<PasswordActionDialogData>).data;
 
   readonly delivery = signal<PasswordActionDelivery | null>(null);
+  readonly updatedUser = signal<UserResponse | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly isLoading = signal(false);
 
   get confirmationTitle(): string {
     return this.data.operation === 'reset'
       ? `Restablecer la contraseña de ${this.data.user.login}`
-      : `Regenerar la acción de ${this.data.user.login}`;
+      : `${this.resendActionLabel} de ${this.data.user.login}`;
   }
 
   get confirmationMessage(): string {
     return this.data.operation === 'reset'
-      ? 'La contraseña anterior dejará de funcionar inmediatamente. Se creará una acción de un solo uso para que el usuario establezca una nueva.'
-      : 'El enlace y código anteriores dejarán de funcionar. Se creará una nueva acción de un solo uso con otra fecha de expiración.';
+      ? 'La contraseña actual dejará de funcionar y se revocarán las sesiones o tokens de renovación correspondientes. El usuario deberá establecer una nueva contraseña mediante el enlace enviado.'
+      : `El enlace anterior dejará de funcionar. Se generará uno nuevo con una nueva expiración.${this.currentExpirationMessage}`;
   }
 
   get confirmLabel(): string {
-    return this.data.operation === 'reset' ? 'Restablecer contraseña' : 'Regenerar acción';
+    return this.data.operation === 'reset' ? 'Restablecer contraseña' : this.resendActionLabel;
   }
 
   confirm(): void {
@@ -98,16 +99,48 @@ export class PasswordActionDialog {
     const request =
       this.data.operation === 'reset'
         ? this.userDataSource.resetPassword(this.data.user.id)
-        : this.userDataSource.regeneratePasswordAction(this.data.user.id);
+        : this.userDataSource.resendPasswordAction(this.data.user.id);
 
     request.pipe(finalize(() => this.isLoading.set(false))).subscribe({
-      next: ({ passwordAction }) => this.delivery.set(passwordAction),
+      next: ({ passwordAction }) => {
+        const purpose: PasswordActionPurpose =
+          this.data.operation === 'reset'
+            ? 'PASSWORD_RESET'
+            : this.data.user.passwordAction!.purpose;
+        this.updatedUser.set({
+          ...this.data.user,
+          passwordAction: { purpose, expiresAt: passwordAction.expiresAt },
+        });
+        this.delivery.set(passwordAction);
+      },
       error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error)),
     });
   }
 
   close(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(this.updatedUser());
+  }
+
+  private get resendActionLabel(): string {
+    return this.data.user.passwordAction?.purpose === 'INITIAL_SETUP'
+      ? 'Reenviar enlace de configuración'
+      : 'Reenviar enlace de restablecimiento';
+  }
+
+  private get currentExpirationMessage(): string {
+    const expiresAt = this.data.user.passwordAction?.expiresAt;
+    if (!expiresAt) return '';
+
+    const expiration = new Date(expiresAt);
+    if (Number.isNaN(expiration.getTime())) return '';
+
+    const formattedExpiration = new Intl.DateTimeFormat('es-BO', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(expiration);
+    return expiration.getTime() <= Date.now()
+      ? ` El enlace actual venció el ${formattedExpiration}.`
+      : ` El enlace actual vence el ${formattedExpiration}.`;
   }
 
   private getErrorMessage(error: HttpErrorResponse): string {
@@ -115,8 +148,8 @@ export class PasswordActionDialog {
       return 'No se pudo conectar con el servidor. Revise su conexión e intente nuevamente.';
     }
     if (error.status === 404) {
-      return this.data.operation === 'regenerate'
-        ? 'El usuario no tiene una acción de contraseña pendiente para regenerar.'
+      return this.data.operation === 'resend'
+        ? 'El usuario no tiene una acción de contraseña pendiente para reenviar.'
         : 'No se encontró el usuario.';
     }
     if (error.status === 409) {

@@ -69,8 +69,13 @@ export default class UserAdmin {
   }
 
   openPasswordActionDialog(user: UserResponse, operation: PasswordActionOperation): void {
-    this.dialogService.open(PasswordActionDialog, {
-      header: operation === 'reset' ? 'Restablecer contraseña' : 'Regenerar enlace o código',
+    const dialogRef = this.dialogService.open(PasswordActionDialog, {
+      header:
+        operation === 'reset'
+          ? 'Restablecer contraseña'
+          : user.passwordAction?.purpose === 'INITIAL_SETUP'
+            ? 'Reenviar enlace de configuración'
+            : 'Reenviar enlace de restablecimiento',
       modal: true,
       draggable: false,
       closeOnEscape: false,
@@ -81,6 +86,9 @@ export default class UserAdmin {
         '960px': '75vw',
         '640px': '94vw',
       },
+    });
+    dialogRef?.onClose.subscribe((result?: UserResponse) => {
+      if (result) this.updateItemDataSource(result);
     });
   }
 
@@ -95,6 +103,7 @@ export default class UserAdmin {
   }
 
   openMenu(row: UserResponse): void {
+    const passwordAction = this.getPasswordActionMenuItem(row);
     this.menuItems = [
       {
         label: 'Opciones',
@@ -104,19 +113,31 @@ export default class UserAdmin {
             icon: 'pi pi-pencil',
             command: () => this.openUserDialog(row),
           },
-          {
-            label: 'Restablecer contraseña',
-            icon: 'pi pi-sync',
-            command: () => this.openPasswordActionDialog(row, 'reset'),
-          },
-          {
-            label: 'Regenerar enlace o código',
-            icon: 'pi pi-refresh',
-            command: () => this.openPasswordActionDialog(row, 'regenerate'),
-          },
+          ...(passwordAction ? [passwordAction] : []),
         ],
       },
     ];
+  }
+
+  private getPasswordActionMenuItem(user: UserResponse): MenuItem | null {
+    if (!user.isActive) return null;
+
+    if (!user.passwordAction) {
+      return {
+        label: 'Restablecer contraseña',
+        icon: 'pi pi-sync',
+        command: () => this.openPasswordActionDialog(user, 'reset'),
+      };
+    }
+
+    return {
+      label:
+        user.passwordAction.purpose === 'INITIAL_SETUP'
+          ? 'Reenviar enlace de configuración'
+          : 'Reenviar enlace de restablecimiento',
+      icon: 'pi pi-send',
+      command: () => this.openPasswordActionDialog(user, 'resend'),
+    };
   }
 
   private updateItemDataSource(item: UserResponse): void {

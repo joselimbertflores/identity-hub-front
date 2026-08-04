@@ -255,7 +255,11 @@ export class UserEditor {
         .update(this.data.id, request)
         .pipe(finalize(() => this.isSaving.set(false)))
         .subscribe({
-          next: ({ user }) => this.dialogRef.close(user),
+          next: ({ user }) =>
+            this.dialogRef.close({
+              ...user,
+              passwordAction: this.data!.passwordAction,
+            }),
           error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error)),
         });
       return;
@@ -265,7 +269,17 @@ export class UserEditor {
       .create(request)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe({
-        next: (response) => this.createdResult.set(response),
+        next: (response) =>
+          this.createdResult.set({
+            ...response,
+            user: {
+              ...response.user,
+              passwordAction: {
+                purpose: 'INITIAL_SETUP',
+                expiresAt: response.passwordAction.expiresAt,
+              },
+            },
+          }),
         error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error)),
       });
   }

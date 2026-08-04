@@ -10,7 +10,7 @@ import theme from '@primeuix/themes/aura';
 import { authInterceptor, httpErrorInterceptor } from './core';
 import { routes } from './app.routes';
 
-const primaryColor = palette('{sky}');
+const primaryColor = palette('{green}');
 const AuraSky = definePreset(theme, {
   semantic: {
     primary: primaryColor,

@@ -147,17 +147,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 
               <p-button type="submit" label="Ingresar" [loading]="isSubmitting()" [fluid]="true" />
             </form>
-
-            <div class="mt-6 border-t border-surface-200 pt-4 text-center">
-              <div class="flex items-center gap-2 justify-center">
-                <img
-                  src="images/logos/escudo.webp"
-                  alt="Gobierno Autónomo Municipal de Sacaba"
-                  class="h-8 w-auto opacity-80"
-                />
-                <p class="mt-1 text-xs text-surface-600">Gobierno Autónomo Municipal de Sacaba</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
