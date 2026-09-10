@@ -1,4 +1,4 @@
-import { Component, inject, linkedSignal, signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal, ChangeDetectionStrategy } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { TableModule, TablePageEvent } from 'primeng/table';
@@ -18,6 +18,7 @@ import { ApplicationResponse } from '../../interfaces';
   selector: 'app-application-admin',
   imports: [ButtonModule, TableModule, SearchInput, ConfirmDialogModule, MenuModule, TagModule],
   templateUrl: './application-admin.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [DialogService, ConfirmationService],
 })
 export default class ApplicationAdmin {

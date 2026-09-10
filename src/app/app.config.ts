@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { provideRouter, withViewTransitions } from '@angular/router';
 
 import { definePreset, palette } from '@primeuix/themes';
@@ -20,7 +20,7 @@ const AuraSky = definePreset(theme, {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withInterceptors([authInterceptor, httpErrorInterceptor])),
+    provideHttpClient(withXhr(), withInterceptors([authInterceptor, httpErrorInterceptor])),
     provideRouter(routes, withViewTransitions()),
     providePrimeNG({
       ripple: true,

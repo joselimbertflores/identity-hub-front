@@ -12,6 +12,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       <path d="M9.2 12.5L11 14.2L14.6 10.6L13.8 9.8L11 12.6L9.9 11.5Z" fill="currentColor" />
     </svg>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     class: 'inline-block',
   },

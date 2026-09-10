@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SkeletonModule } from 'primeng/skeleton';
 
@@ -9,6 +9,7 @@ import { AccessDataSource } from '../../services';
 @Component({
   selector: 'app-my-access-page',
   imports: [SkeletonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './my-access-page.html',
 })
 export default class MyAccessPage {

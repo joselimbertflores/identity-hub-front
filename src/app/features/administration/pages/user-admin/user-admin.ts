@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, linkedSignal, signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal, ChangeDetectionStrategy } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { ButtonModule } from 'primeng/button';
@@ -18,6 +18,7 @@ import { UserDataSource } from '../../services';
   selector: 'app-user-admin',
   imports: [CommonModule, ButtonModule, TableModule, SearchInput, MenuModule, TagModule],
   templateUrl: './user-admin.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [DialogService],
 })
 export default class UserAdmin {

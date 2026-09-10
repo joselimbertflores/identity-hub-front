@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { UpperCasePipe } from '@angular/common';
 
@@ -41,6 +41,7 @@ import { ApplicationResponse } from '../../interfaces';
       <p-button label="Entendido" (onClick)="close()" />
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [MessageService],
 })
 export class ClientSecretDialog {
