@@ -37,6 +37,11 @@ export class AuthDataSource {
     );
   }
 
+  resumeOAuth(authRequestId: string) {
+    const params = new HttpParams().set('auth_request_id', authRequestId);
+    return this.http.get<{ redirectUrl: string }>(`${this.URL}/oauth/resume`, { params });
+  }
+
   changePassword(request: ChangePasswordRequest, authRequestId?: string) {
     const params = authRequestId
       ? new HttpParams().set('auth_request_id', authRequestId)
