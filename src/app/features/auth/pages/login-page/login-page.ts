@@ -12,7 +12,6 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { environment } from '../../../../../environments/environment';
-import { AppIcon } from '../../../../shared';
 
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_credentials: 'Usuario o contraseña incorrectos.',
@@ -31,7 +30,6 @@ const ERROR_MESSAGES: Record<string, string> = {
     HlmInputImports,
     HlmInputGroupImports,
     HlmSpinnerImports,
-    AppIcon,
     RouterLink,
   ],
   template: `
@@ -42,28 +40,32 @@ const ERROR_MESSAGES: Record<string, string> = {
       >
         <div class="w-full max-w-md">
           <div
-            class="rounded-xl border border-border bg-card px-5 py-7 shadow-md sm:px-8 sm:py-9"
+            class="rounded-xl border border-border bg-card px-5 pt-7 pb-5 shadow-md sm:px-8 sm:pt-8 sm:pb-5"
           >
             <div class="flex flex-col items-center text-center">
-              <app-icon class="size-14 text-primary sm:size-16" />
+              <img
+                src="/identity-hub-mark.svg"
+                alt=""
+                aria-hidden="true"
+                class="size-18 sm:size-20"
+              />
 
               <h1
                 id="login-title"
-                class="mt-2 text-xl font-semibold leading-tight text-foreground sm:text-2xl"
+                class="mt-2 text-2xl font-semibold leading-tight text-foreground sm:text-3xl"
               >
-                Sistema Institucional de Autenticación y Acceso
+                SIAU
               </h1>
 
-              <p id="login-description" class="mt-2 text-sm leading-6 text-muted-foreground">
-                Ingrese con sus credenciales institucionales para continuar.
+              <p class="mt-1 text-sm leading-5 text-muted-foreground sm:text-base">
+                Sistema de Identidad y Acceso Unificado
               </p>
             </div>
 
             <form
-              class="mt-8 flex flex-col gap-5"
+              class="mt-6 flex flex-col gap-5"
               [formGroup]="loginForm"
               (ngSubmit)="login()"
-              aria-describedby="login-description"
               novalidate
             >
               <fieldset hlmFieldSet>
@@ -134,6 +136,22 @@ const ERROR_MESSAGES: Record<string, string> = {
                 Ingresar
               </button>
             </form>
+
+            <footer class="mt-6 border-t border-border pt-4">
+              <div
+                class="flex items-center justify-center gap-3 text-center text-muted-foreground"
+              >
+                <img
+                  src="/sacaba-mark.svg"
+                  alt=""
+                  aria-hidden="true"
+                  class="size-9 shrink-0"
+                />
+                <p class="max-w-56 text-xs leading-5">
+                  Gobierno Autónomo Municipal de Sacaba
+                </p>
+              </div>
+            </footer>
           </div>
         </div>
       </section>
