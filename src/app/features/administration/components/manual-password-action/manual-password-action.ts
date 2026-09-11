@@ -1,8 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, input, signal } from '@angular/core';
-
-import { ButtonModule } from 'primeng/button';
-import { MessageModule } from 'primeng/message';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { toDataURL } from 'qrcode';
 
 import { PasswordActionManualDetails } from '../../interfaces';
@@ -11,7 +11,7 @@ type CopyTarget = 'code' | 'link';
 
 @Component({
   selector: 'app-manual-password-action',
-  imports: [DatePipe, ButtonModule, MessageModule],
+  imports: [DatePipe, NgIcon, HlmAlertImports, HlmButtonImports],
   templateUrl: './manual-password-action.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

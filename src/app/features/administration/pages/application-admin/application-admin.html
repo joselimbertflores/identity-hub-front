@@ -1,61 +1,90 @@
-<div class="flex items-center justify-between mb-4">
+<div class="mb-4 flex items-center justify-between">
   <h2 class="text-2xl font-semibold">Sistemas</h2>
-  <p-button
-    label="Agregar"
-    icon="pi pi-plus"
-    iconPos="left"
-    size="small"
-    (onClick)="openApplicationDialog()"
+  <button hlmBtn size="sm" type="button" (click)="openApplicationDialog()">
+    <ng-icon name="lucidePlus" />
+    Agregar
+  </button>
+</div>
+<div class="flex flex-col gap-4">
+  <div class="flex sm:justify-end">
+    <div class="w-full sm:w-1/4">
+      <search-input (search)="search($event)" label="Buscar" />
+    </div>
+  </div>
+
+  <div hlmTableContainer class="rounded-lg border border-border">
+    <table hlmTable>
+      <thead hlmTHead>
+        <tr hlmTr>
+          <th hlmTh>Nombre</th>
+          <th hlmTh>Descripción</th>
+          <th hlmTh class="w-[150px]">Estado</th>
+          <th hlmTh class="w-10"><span class="sr-only">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody hlmTBody>
+        @for (item of dataSource(); track item.id) {
+          <tr hlmTr>
+            <td hlmTd>{{ item.name }}</td>
+            <td hlmTd>{{ item.description }}</td>
+            <td hlmTd>
+          @if (item.isActive) {
+                <span hlmBadge>Habilitado</span>
+          } @else {
+                <span hlmBadge variant="secondary">Deshabilitado</span>
+          }
+            </td>
+            <td hlmTd>
+              <button hlmBtn variant="ghost" size="icon-sm" type="button" [hlmDropdownMenuTrigger]="actionsMenu" aria-label="Abrir acciones">
+                <ng-icon name="lucideEllipsisVertical" />
+              </button>
+              <ng-template #actionsMenu>
+                <hlm-dropdown-menu class="w-52">
+                  <hlm-dropdown-menu-label>Opciones</hlm-dropdown-menu-label>
+                  <hlm-dropdown-menu-separator />
+                  <button hlmDropdownMenuItem type="button" (click)="openApplicationDialog(item)">
+                    <ng-icon name="lucidePencil" />
+                    Editar
+                  </button>
+                  <button hlmDropdownMenuItem type="button" (click)="confirmRegenerateSecret(item); confirmDialog.open()">
+                    <ng-icon name="lucideKeyRound" />
+                    Regenerar secreto
+                  </button>
+                </hlm-dropdown-menu>
+              </ng-template>
+            </td>
+          </tr>
+        } @empty {
+          <tr hlmTr><td hlmTd colspan="4" class="h-24 text-center text-muted-foreground">Sin registros</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <hlm-numbered-pagination
+    [currentPage]="currentPage()"
+    (currentPageChange)="changePage($event)"
+    [itemsPerPage]="limit()"
+    (itemsPerPageChange)="changePageSize($event)"
+    [totalItems]="dataSize()"
   />
 </div>
-<div>
-  <p-table
-    #table
-    [value]="dataSource()"
-    [totalRecords]="dataSize()"
-    [rows]="limit()"
-    [paginator]="true"
-    (onPage)="changePage($event)"
-    size="small"
-  >
-    <ng-template #caption>
-      <div class="flex sm:justify-end">
-        <div class="w-full sm:w-1/4">
-          <search-input (search)="search($event)" label="Buscar" />
-        </div>
-      </div>
-    </ng-template>
-    <ng-template #header>
-      <tr>
-        <th>Nombre</th>
-        <th>Descripcion</th>
-        <th class="w-[150px]">Estado</th>
-        <th style="width: 2.5rem"></th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-item>
-      <tr>
-        <td>{{ item.name }}</td>
-        <td>{{ item.description }}</td>
-        <td>
-          @if (item.isActive) {
-            <p-tag severity="success" value="Habilitado" />
-          } @else {
-            <p-tag severity="warn" value="Deshabilitado" />
-          }
-        </td>
-        <td>
-          <p-button
-            severity="secondary"
-            [rounded]="true"
-            icon="pi pi-ellipsis-v"
-            size="small"
-            (click)="openMenu(item); menu.toggle($event)"
-          />
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-  <p-menu #menu [popup]="true" appendTo="body" [model]="menuItems"></p-menu>
-</div>
-<p-confirmdialog />
+
+<hlm-alert-dialog #confirmDialog (closed)="pendingSecretRegeneration.set(null)">
+  <hlm-alert-dialog-content *hlmAlertDialogPortal>
+    <hlm-alert-dialog-header>
+      <h2 hlmAlertDialogTitle>Regenerar secreto</h2>
+      <p hlmAlertDialogDescription>
+        @if (pendingSecretRegeneration(); as application) {
+          El secreto actual de "{{ application.name }}" dejará de funcionar inmediatamente. ¿Desea continuar?
+        }
+      </p>
+    </hlm-alert-dialog-header>
+    <hlm-alert-dialog-footer>
+      <button hlmAlertDialogCancel>Cancelar</button>
+      @if (pendingSecretRegeneration(); as application) {
+        <button hlmAlertDialogAction (click)="regenerateSecret(application); confirmDialog.close()">Regenerar</button>
+      }
+    </hlm-alert-dialog-footer>
+  </hlm-alert-dialog-content>
+</hlm-alert-dialog>

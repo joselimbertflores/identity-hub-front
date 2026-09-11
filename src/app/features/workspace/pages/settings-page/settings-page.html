@@ -1,26 +1,27 @@
 <div class="mx-auto max-w-4xl p-2 md:p-4">
   <div class="mb-8">
-    <h1 class="text-lg font-bold text-surface-900 sm:text-2xl">Configuración del usuario</h1>
-    <p class="max-w-2xl text-sm/6 text-surface-600">Administre sus datos de acceso.</p>
+    <h1 class="text-lg font-bold text-foreground sm:text-2xl">Configuración del usuario</h1>
+    <p class="max-w-2xl text-sm/6 text-muted-foreground">Administre sus datos de acceso.</p>
   </div>
 
-  <dl class="-my-3 divide-y divide-surface-200 text-sm">
+  <dl class="-my-3 divide-y divide-border text-sm">
     <div class="grid grid-cols-1 gap-1 py-3 sm:grid-cols-3 sm:gap-4">
-      <dt class="font-medium text-surface-900">Nombre</dt>
-      <dd class="text-surface-700 sm:col-span-2">{{ user()?.fullName }}</dd>
+      <dt class="font-medium text-foreground">Nombre</dt>
+      <dd class="text-muted-foreground sm:col-span-2">{{ user()?.fullName }}</dd>
     </div>
     <div class="grid grid-cols-1 gap-3 py-5 sm:grid-cols-3 sm:gap-4">
       <div>
-        <dt class="font-medium text-surface-900">Cambiar contraseña</dt>
-        <p class="mt-1 text-sm leading-5 text-surface-500">
+        <dt class="font-medium text-foreground">Cambiar contraseña</dt>
+        <p class="mt-1 text-sm leading-5 text-muted-foreground">
           La sesión actual se conservará después del cambio.
         </p>
       </div>
       <dd class="sm:col-span-2">
         @if (successMessage()) {
-          <p-message severity="success" class="mb-5 w-full" aria-live="polite">
-            {{ successMessage() }}
-          </p-message>
+          <div hlmAlert class="mb-5" role="status" aria-live="polite">
+            <ng-icon name="lucideCircleCheck" class="text-primary" />
+            <div><h2 hlmAlertTitle>Contraseña actualizada</h2><p hlmAlertDescription>{{ successMessage() }}</p></div>
+          </div>
         }
         <app-password-change-form
           [loading]="isSaving()"

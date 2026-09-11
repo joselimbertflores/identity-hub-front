@@ -1,10 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-
-import { ButtonModule } from 'primeng/button';
-import { MessageModule } from 'primeng/message';
-import { PasswordModule } from 'primeng/password';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { ChangePasswordRequest } from '../../../../core/auth/auth.types';
 import { FormUtils } from '../../../../helpers';
@@ -16,7 +26,15 @@ import {
 
 @Component({
   selector: 'app-password-change-form',
-  imports: [ReactiveFormsModule, PasswordModule, ButtonModule, MessageModule],
+  imports: [
+    ReactiveFormsModule,
+    NgIcon,
+    HlmAlertImports,
+    HlmButtonImports,
+    HlmFieldImports,
+    HlmInputGroupImports,
+    HlmSpinnerImports,
+  ],
   templateUrl: './password-change-form.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -25,6 +43,9 @@ export class PasswordChangeForm {
   readonly errorMessage = input<string | null>(null);
   readonly submitLabel = input('Cambiar contraseña');
   readonly submitted = output<ChangePasswordRequest>();
+  readonly hideCurrentPassword = signal(true);
+  readonly hideNewPassword = signal(true);
+  readonly hidePasswordConfirmation = signal(true);
 
   private readonly formBuilder = new FormBuilder();
   readonly form = this.formBuilder.nonNullable.group(

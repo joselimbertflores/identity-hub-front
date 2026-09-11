@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-
-import { MessageModule } from 'primeng/message';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
 
 import { PasswordActionDelivery, PasswordActionManualDetails } from '../../interfaces';
 import { ManualPasswordAction } from '../manual-password-action/manual-password-action';
@@ -9,22 +9,24 @@ export type PasswordActionContext = 'create' | 'reset' | 'resend';
 
 @Component({
   selector: 'app-password-action-delivery',
-  imports: [MessageModule, ManualPasswordAction],
+  imports: [NgIcon, HlmAlertImports, ManualPasswordAction],
   template: `
-    <div class="space-y-5">
+    <div class="flex flex-col gap-5">
       @if (emailSent()) {
-        <p-message severity="success" class="w-full" role="status">
-          {{ emailSuccessMessage() }}
-        </p-message>
+        <div hlmAlert role="status">
+          <ng-icon name="lucideCircleCheck" class="text-primary" />
+          <div><h3 hlmAlertTitle>Correo enviado</h3><p hlmAlertDescription>{{ emailSuccessMessage() }}</p></div>
+        </div>
       } @else {
         @if (emailFailed()) {
-          <p-message severity="warn" class="w-full" role="alert">
-            {{ emailFailureMessage() }}
-          </p-message>
+          <div hlmAlert>
+            <ng-icon name="lucideTriangleAlert" />
+            <div><h3 hlmAlertTitle>No se pudo enviar el correo</h3><p hlmAlertDescription>{{ emailFailureMessage() }}</p></div>
+          </div>
         } @else {
-          <p-message severity="info" class="w-full" role="status">
-            La acción debe entregarse manualmente al usuario.
-          </p-message>
+          <div hlmAlert role="status">
+            <div><h3 hlmAlertTitle>Entrega manual</h3><p hlmAlertDescription>La acción debe entregarse manualmente al usuario.</p></div>
+          </div>
         }
 
         @if (manualDetails(); as details) {

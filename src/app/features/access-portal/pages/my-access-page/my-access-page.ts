@@ -1,30 +1,31 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { SkeletonModule } from 'primeng/skeleton';
-
+import { NgIcon } from '@ng-icons/core';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 import { finalize } from 'rxjs';
 
 import { AccessDataSource } from '../../services';
 
 @Component({
   selector: 'app-my-access-page',
-  imports: [SkeletonModule],
+  imports: [NgIcon, HlmEmptyImports, HlmSkeletonImports],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './my-access-page.html',
 })
 export default class MyAccessPage {
-  private accesDataSource = inject(AccessDataSource);
+  private readonly accesDataSource = inject(AccessDataSource);
 
-  isLoading = signal(true);
+  readonly isLoading = signal(true);
 
-  applications = toSignal(
+  readonly applications = toSignal(
     this.accesDataSource.getMyApplications().pipe(finalize(() => this.isLoading.set(false))),
     { initialValue: [] },
   );
 
   readonly skeletonItems = Array.from({ length: 6 });
 
-  openApp(url: string) {
+  openApp(url: string): void {
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 }

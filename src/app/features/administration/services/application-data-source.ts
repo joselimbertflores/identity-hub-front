@@ -21,7 +21,7 @@ export class ApplicationDataSource {
   }
 
   update(id: number, form: object) {
-    return this.http.patch(`${this.URL}/${id}`, form);
+    return this.http.patch<ApplicationResponse>(`${this.URL}/${id}`, form);
   }
 
   findAll(limit: number, offset: number, term?: string) {

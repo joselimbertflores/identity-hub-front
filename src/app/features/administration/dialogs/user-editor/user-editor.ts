@@ -1,201 +1,187 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon } from '@ng-icons/core';
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
+import { HlmDialogFooter, HlmDialogHeader, HlmDialogTitle } from '@spartan-ng/helm/dialog';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
+import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { finalize } from 'rxjs';
-
-import { ButtonModule } from 'primeng/button';
-import { CheckboxModule } from 'primeng/checkbox';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { InputTextModule } from 'primeng/inputtext';
-import { ListboxModule } from 'primeng/listbox';
-import { MessageModule } from 'primeng/message';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { StepperModule } from 'primeng/stepper';
 
 import { PasswordActionDeliveryView } from '../../components/password-action-delivery/password-action-delivery';
 import { SaveUserRequest, UserResponse, UserRole } from '../../interfaces';
 import { ApplicationDataSource, CreateUserResponse, UserDataSource } from '../../services';
 
+export interface UserEditorContext {
+  user?: UserResponse;
+}
+
 @Component({
   selector: 'app-user-editor',
   imports: [
     ReactiveFormsModule,
-    MultiSelectModule,
-    FloatLabelModule,
-    InputTextModule,
-    CheckboxModule,
-    StepperModule,
-    ListboxModule,
-    ButtonModule,
-    MessageModule,
+    NgIcon,
+    HlmAlertImports,
+    HlmButtonImports,
+    HlmCheckboxImports,
+    HlmComboboxImports,
+    HlmDialogFooter,
+    HlmDialogHeader,
+    HlmDialogTitle,
+    HlmFieldImports,
+    HlmInputImports,
+    HlmSpinnerImports,
+    HlmTabsImports,
     PasswordActionDeliveryView,
   ],
+  host: { class: 'flex flex-col gap-4' },
   template: `
+    <hlm-dialog-header>
+      <h2 hlmDialogTitle>{{ data ? 'Editar usuario' : 'Crear usuario' }}</h2>
+    </hlm-dialog-header>
+
     @if (createdResult(); as result) {
       <app-password-action-delivery [delivery]="result.passwordAction" context="create" />
-      <div class="mt-6 flex justify-end border-t border-surface-200 pt-4">
-        <p-button label="Cerrar" type="button" (onClick)="closeCreatedResult()" />
-      </div>
+      <hlm-dialog-footer class="mt-2 border-t border-border pt-4">
+        <button hlmBtn type="button" (click)="closeCreatedResult()">Cerrar</button>
+      </hlm-dialog-footer>
     } @else {
-      <form [formGroup]="userForm" (ngSubmit)="save()" novalidate>
-        <p-stepper [value]="1">
-          <p-step-list>
-            <p-step [value]="1">Datos del usuario</p-step>
-            <p-step [value]="2">Accesos</p-step>
-          </p-step-list>
-          <p-step-panels>
-            <p-step-panel [value]="1">
-              <ng-template #content let-activateCallback="activateCallback">
-                <div class="grid grid-cols-1 gap-x-3 gap-y-6 lg:grid-cols-2">
-                  <div class="lg:col-span-2">
-                    <p-floatlabel variant="on">
-                      <input
-                        id="fullName"
-                        [fluid]="true"
-                        pInputText
-                        autocomplete="name"
-                        formControlName="fullName"
-                      />
-                      <label for="fullName">Nombre completo</label>
-                    </p-floatlabel>
-                  </div>
-                  <div>
-                    <p-floatlabel variant="on">
-                      <input
-                        id="login"
-                        [fluid]="true"
-                        pInputText
-                        autocomplete="off"
-                        formControlName="login"
-                      />
-                      <label for="login">Usuario</label>
-                    </p-floatlabel>
-                  </div>
-                  <div>
-                    <p-floatlabel variant="on">
-                      <input
-                        id="email"
-                        type="email"
-                        [fluid]="true"
-                        pInputText
-                        autocomplete="email"
-                        formControlName="email"
-                      />
-                      <label for="email">Correo (opcional)</label>
-                    </p-floatlabel>
-                    @if (userForm.controls.email.touched && userForm.controls.email.invalid) {
-                      <small class="mt-1 block text-red-600">Ingrese un correo válido.</small>
+      <form class="flex flex-col gap-4" [formGroup]="userForm" (ngSubmit)="save()" novalidate>
+        <hlm-tabs [tab]="activeTab()" (tabActivated)="activeTab.set($event)">
+          <hlm-tabs-list class="grid w-full grid-cols-2">
+            <button hlmTabsTrigger="details" type="button">Datos del usuario</button>
+            <button hlmTabsTrigger="access" type="button">Accesos</button>
+          </hlm-tabs-list>
+
+          <div hlmTabsContent="details" class="mt-4">
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div hlmField class="lg:col-span-2">
+                <label hlmFieldLabel for="fullName">Nombre completo</label>
+                <input id="fullName" hlmInput autocomplete="name" formControlName="fullName" />
+                @if (userForm.controls.fullName.touched && userForm.controls.fullName.invalid) {
+                  <hlm-field-error>El nombre completo es obligatorio.</hlm-field-error>
+                }
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="login">Usuario</label>
+                <input id="login" hlmInput autocomplete="off" formControlName="login" />
+                @if (userForm.controls.login.touched && userForm.controls.login.invalid) {
+                  <hlm-field-error>El usuario es obligatorio.</hlm-field-error>
+                }
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="email">Correo (opcional)</label>
+                <input id="email" hlmInput type="email" autocomplete="email" formControlName="email" />
+                @if (userForm.controls.email.touched && userForm.controls.email.invalid) {
+                  <hlm-field-error>Ingrese un correo válido.</hlm-field-error>
+                }
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="selectRoles">Roles</label>
+                <hlm-combobox-multiple formControlName="roles" [itemToString]="roleLabel">
+                  <hlm-combobox-chips id="selectRoles">
+                    <ng-template hlmComboboxValues let-values>
+                      @for (role of values; track role) {
+                        <hlm-combobox-chip [value]="role">{{ roleLabel(role) }}</hlm-combobox-chip>
+                      }
+                    </ng-template>
+                    <input hlmComboboxChipInput placeholder="Seleccione roles" />
+                  </hlm-combobox-chips>
+                  <hlm-combobox-content *hlmComboboxPortal>
+                    <hlm-combobox-empty>Sin resultados</hlm-combobox-empty>
+                    <div hlmComboboxList>
+                      @for (role of roles; track role.value) {
+                        <hlm-combobox-item [value]="role.value">{{ role.label }}</hlm-combobox-item>
+                      }
+                    </div>
+                  </hlm-combobox-content>
+                </hlm-combobox-multiple>
+                @if (userForm.controls.roles.touched && userForm.controls.roles.invalid) {
+                  <hlm-field-error>Seleccione al menos un rol.</hlm-field-error>
+                }
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="relationKey">Clave de relación (opcional)</label>
+                <input id="relationKey" hlmInput autocomplete="off" formControlName="relationKey" />
+              </div>
+
+              <div hlmField orientation="horizontal" class="lg:col-span-2">
+                <hlm-checkbox inputId="userStatus" formControlName="isActive" />
+                <label hlmFieldLabel for="userStatus">Habilitado</label>
+              </div>
+            </div>
+
+            <div class="mt-4 flex justify-end">
+              <button hlmBtn variant="outline" size="sm" type="button" (click)="activeTab.set('access')">
+                Siguiente
+                <ng-icon name="lucideArrowRight" />
+              </button>
+            </div>
+          </div>
+
+          <div hlmTabsContent="access" class="mt-4">
+            <div hlmField>
+              <label hlmFieldLabel for="applications">Sistemas asignados</label>
+              <hlm-combobox-multiple formControlName="applicationIds" [itemToString]="applicationName">
+                <hlm-combobox-chips id="applications" class="max-h-28 overflow-auto">
+                  <ng-template hlmComboboxValues let-values>
+                    @for (applicationId of values; track applicationId) {
+                      <hlm-combobox-chip [value]="applicationId">{{ applicationName(applicationId) }}</hlm-combobox-chip>
+                    }
+                  </ng-template>
+                  <input hlmComboboxChipInput placeholder="Buscar sistema" />
+                </hlm-combobox-chips>
+                <hlm-combobox-content *hlmComboboxPortal>
+                  <hlm-combobox-empty>Sin resultados</hlm-combobox-empty>
+                  <div hlmComboboxList>
+                    @for (application of applications(); track application.id) {
+                      <hlm-combobox-item [value]="application.id">
+                        <div class="flex flex-col">
+                          <span class="font-medium">{{ application.name }}</span>
+                          <span class="text-xs text-muted-foreground">{{ application.description }}</span>
+                        </div>
+                      </hlm-combobox-item>
                     }
                   </div>
-                  <div>
-                    <p-floatlabel variant="on">
-                      <p-multiselect
-                        inputId="selectRoles"
-                        [options]="ROLES"
-                        [filter]="false"
-                        optionLabel="label"
-                        optionValue="value"
-                        [maxSelectedLabels]="3"
-                        class="w-full"
-                        formControlName="roles"
-                      />
-                      <label for="selectRoles">Roles</label>
-                    </p-floatlabel>
-                  </div>
-                  <div>
-                    <p-floatlabel variant="on">
-                      <input
-                        id="relationKey"
-                        [fluid]="true"
-                        pInputText
-                        autocomplete="off"
-                        formControlName="relationKey"
-                      />
-                      <label for="relationKey">Clave de relación (opcional)</label>
-                    </p-floatlabel>
-                  </div>
-                  <div class="flex items-center px-1 lg:col-span-2">
-                    <p-checkbox inputId="userStatus" [binary]="true" formControlName="isActive" />
-                    <label for="userStatus" class="ml-2">Habilitado</label>
-                  </div>
-                </div>
+                </hlm-combobox-content>
+              </hlm-combobox-multiple>
+              <p hlmFieldDescription>Seleccione los sistemas disponibles para este usuario.</p>
+            </div>
 
-                <div class="flex justify-end px-2 pt-5">
-                  <p-button
-                    label="Siguiente"
-                    icon="pi pi-arrow-right"
-                    iconPos="right"
-                    size="small"
-                    [outlined]="true"
-                    type="button"
-                    (onClick)="activateCallback(2)"
-                  />
-                </div>
-              </ng-template>
-            </p-step-panel>
-
-            <p-step-panel [value]="2">
-              <ng-template #content let-activateCallback="activateCallback">
-                <p-listbox
-                  [options]="applications()"
-                  [multiple]="true"
-                  [checkbox]="true"
-                  [filter]="true"
-                  class="w-full"
-                  optionValue="id"
-                  optionLabel="name"
-                  scrollHeight="420px"
-                  filterPlaceHolder="Nombre del sistema"
-                  formControlName="applicationIds"
-                  emptyFilterMessage="Sin resultados"
-                  emptyMessage="Sin registros"
-                >
-                  <ng-template #item let-option>
-                    <div class="ml-2 flex flex-col">
-                      <p class="font-medium text-primary">{{ option.name }}</p>
-                      <span class="text-sm">{{ option.description }}</span>
-                    </div>
-                  </ng-template>
-                </p-listbox>
-                <div class="flex justify-between px-2 pt-4">
-                  <p-button
-                    label="Atrás"
-                    severity="secondary"
-                    icon="pi pi-arrow-left"
-                    size="small"
-                    [outlined]="true"
-                    type="button"
-                    (onClick)="activateCallback(1)"
-                  />
-                </div>
-              </ng-template>
-            </p-step-panel>
-          </p-step-panels>
-        </p-stepper>
+            <div class="mt-4">
+              <button hlmBtn variant="outline" size="sm" type="button" (click)="activeTab.set('details')">
+                <ng-icon name="lucideArrowLeft" />
+                Atrás
+              </button>
+            </div>
+          </div>
+        </hlm-tabs>
 
         @if (errorMessage()) {
-          <p-message severity="error" class="mt-4 w-full" role="alert" aria-live="polite">
-            {{ errorMessage() }}
-          </p-message>
+          <div hlmAlert variant="destructive" aria-live="polite">
+            <ng-icon name="lucideTriangleAlert" />
+            <div><h3 hlmAlertTitle>Error</h3><p hlmAlertDescription>{{ errorMessage() }}</p></div>
+          </div>
         }
 
-        <div class="p-dialog-footer">
-          <p-button
-            label="Cancelar"
-            type="button"
-            severity="secondary"
-            [disabled]="isSaving()"
-            (onClick)="close()"
-          />
-          <p-button
-            label="Guardar"
-            type="submit"
-            [loading]="isSaving()"
-            [disabled]="userForm.invalid || isSaving()"
-          />
-        </div>
+        <hlm-dialog-footer class="border-t border-border pt-4">
+          <button hlmBtn variant="secondary" type="button" [disabled]="isSaving()" (click)="close()">Cancelar</button>
+          <button hlmBtn type="submit" [disabled]="userForm.invalid || isSaving()">
+            @if (isSaving()) { <hlm-spinner /> }
+            Guardar
+          </button>
+        </hlm-dialog-footer>
       </form>
     }
   `,
@@ -203,11 +189,11 @@ import { ApplicationDataSource, CreateUserResponse, UserDataSource } from '../..
 })
 export class UserEditor {
   private readonly formBuilder = inject(FormBuilder);
-  private readonly dialogRef = inject(DynamicDialogRef);
+  private readonly dialogRef = inject<BrnDialogRef<UserResponse>>(BrnDialogRef);
   private readonly userDataSource = inject(UserDataSource);
 
-  readonly data: UserResponse | undefined = inject(DynamicDialogConfig<UserResponse | undefined>)
-    .data;
+  readonly data = injectBrnDialogContext<UserEditorContext>().user;
+  readonly activeTab = signal('details');
   readonly createdResult = signal<CreateUserResponse | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly isSaving = signal(false);
@@ -225,10 +211,16 @@ export class UserEditor {
     initialValue: [],
   });
 
-  readonly ROLES: { label: string; value: UserRole }[] = [
+  readonly roles: { label: string; value: UserRole }[] = [
     { label: 'Administrador', value: 'ADMIN' },
     { label: 'Usuario', value: 'USER' },
   ];
+
+  readonly roleLabel = (role: UserRole): string =>
+    this.roles.find((option) => option.value === role)?.label ?? role;
+
+  readonly applicationName = (applicationId: number): string =>
+    this.applications().find(({ id }) => id === applicationId)?.name ?? String(applicationId);
 
   ngOnInit(): void {
     this.loadForm();

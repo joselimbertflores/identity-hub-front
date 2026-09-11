@@ -2,8 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
-
-import { MessageModule } from 'primeng/message';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
 
 import { AuthDataSource } from '../../../../core';
 import { ChangePasswordRequest } from '../../../../core/auth/auth.types';
@@ -12,7 +12,7 @@ import { getAuthErrorMessage } from '../../../auth/utils/auth-error';
 
 @Component({
   selector: 'app-settings-page',
-  imports: [MessageModule, PasswordChangeForm],
+  imports: [NgIcon, HlmAlertImports, PasswordChangeForm],
   templateUrl: './settings-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

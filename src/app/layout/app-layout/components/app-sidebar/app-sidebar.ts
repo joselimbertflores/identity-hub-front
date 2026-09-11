@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { NgIcon } from '@ng-icons/core';
 
 import { AuthUserResponse } from '../../../../core/auth/auth.types';
 import { MENU_ACTIONS } from '../../../../features/administration/constants/menu.config';
@@ -7,29 +8,29 @@ import { AppIcon } from '../../../../shared';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterModule, AppIcon],
+  imports: [RouterModule, NgIcon, AppIcon],
   template: `
     <nav class="h-full flex flex-col">
-      <div class="h-14 flex items-center gap-x-4 px-6 border-b border-surface-100">
-        <app-icon class="w-8 h-8 text-primary-600" />
-        <span class="text-xl font-bold tracking-tight text-surface-900"> SIAA </span>
+      <div class="flex h-14 items-center gap-4 border-b border-sidebar-border px-6">
+        <app-icon class="size-8 text-primary" />
+        <span class="text-xl font-bold tracking-tight text-sidebar-foreground"> SIAA </span>
       </div>
 
-      <ul class="flex-1 p-2 space-y-1 overflow-auto">
+      <ul class="flex flex-1 flex-col gap-1 overflow-auto p-2">
         @for (item of menu(); track $index) {
           <li>
             <a
               [routerLink]="item.routerLink"
-              routerLinkActive="bg-primary-100 text-primary-700"
+              routerLinkActive="bg-sidebar-accent text-sidebar-accent-foreground"
               [routerLinkActiveOptions]="{ exact: true }"
               class="
-            flex items-center gap-3 px-3 py-2 rounded-lg
-            text-surface-700
-            hover:bg-surface-100
+            flex items-center gap-3 rounded-lg px-3 py-2
+            text-sidebar-foreground
+            hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
             transition-colors
           "
             >
-              <i class="pi {{ item.icon }}"></i>
+              <ng-icon [name]="item.icon" />
               <span class="text-sm font-medium">
                 {{ item.label }}
               </span>
@@ -45,7 +46,7 @@ export class AppSidebar {
   user = input.required<AuthUserResponse | null>();
   menu = computed(() =>
     MENU_ACTIONS.filter((item) => {
-      const roles = item['roles'] as string[] | undefined;
+      const roles = item.roles;
 
       if (!roles || roles.length === 0) {
         return true;

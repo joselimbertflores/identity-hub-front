@@ -1,80 +1,85 @@
-<form [formGroup]="applicationForm" (ngSubmit)="save()">
-  <div class="grid sm:grid-cols-1 lg:grid-cols-2 gap-x-2 gap-y-6 pt-1">
-    <div class="sm:col-span-2">
-      <p-floatlabel variant="on">
-        <input id="name" [fluid]="true" pInputText autocomplete="off" formControlName="name" />
-        <label for="name">Nombre</label>
-      </p-floatlabel>
-    </div>
-    <div class="sm:col-span-2">
-      <p-floatlabel variant="on">
-        <input
-          id="description"
-          [fluid]="true"
-          pInputText
-          autocomplete="off"
-          formControlName="description"
-        />
-        <label for="description">Descripcion</label>
-      </p-floatlabel>
-    </div>
-    <div class="sm:col-span-2">
-      <div class="flex flex-col gap-2">
-        <p-floatlabel variant="on">
-          <p-autocomplete
-            inputId="redirect_uris"
-            formControlName="redirectUris"
-            [fluid]="true"
-            [multiple]="true"
-            [typeahead]="false"
-            separator=","
-            [addOnBlur]="true"
-            [addOnTab]="true"
-            (keydown.enter)="preventSubmit($event)"
-          />
-          <label for="redirect_uris">URLs de redireccion (SSO)</label>
-        </p-floatlabel>
-        <small class="text-color-secondary">
-          Puedes agregar varias URIs separándolas con coma o presionando Enter/Tab.
-        </small>
-      </div>
-    </div>
-    <div>
-      <p-floatlabel variant="on">
-        <input id="code" [fluid]="true" pInputText autocomplete="off" formControlName="clientId" />
-        <label for="code">Identificador unico</label>
-      </p-floatlabel>
-    </div>
-    <div>
-      <p-floatlabel variant="on">
-        <input
-          id="launchUrl"
-          [fluid]="true"
-          pInputText
-          autocomplete="off"
-          formControlName="launchUrl"
-        />
-        <label for="launchUrl">URL de inicio</label>
-      </p-floatlabel>
+<hlm-dialog-header>
+  <h2 hlmDialogTitle>{{ data ? 'Editar sistema' : 'Crear sistema' }}</h2>
+</hlm-dialog-header>
+
+<form class="flex flex-col gap-4" [formGroup]="applicationForm" (ngSubmit)="save()" novalidate>
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div hlmField class="lg:col-span-2">
+      <label hlmFieldLabel for="name">Nombre</label>
+      <input id="name" hlmInput autocomplete="off" formControlName="name" />
+      @if (formUtils.isInvalid(applicationForm.controls['name'])) {
+        <hlm-field-error>El nombre es obligatorio.</hlm-field-error>
+      }
     </div>
 
-    <div class="flex items-center gap-x-2 px-2">
-      <span>Seleccione un Color:</span>
-      <p-colorpicker formControlName="color" appendTo="body" />
+    <div hlmField class="lg:col-span-2">
+      <label hlmFieldLabel for="description">Descripción</label>
+      <input id="description" hlmInput autocomplete="off" formControlName="description" />
     </div>
-    <div class="flex items-center px-4">
-      <p-checkbox inputId="userStatus" [binary]="true" formControlName="isActive" />
-      <label for="userStatus" class="ml-2"> Habilitado </label>
+
+    <div hlmField class="lg:col-span-2">
+      <label hlmFieldLabel for="redirect_uris">URLs de redirección (SSO)</label>
+      @if (applicationForm.controls['redirectUris'].value; as redirectUris) {
+        @if (redirectUris.length > 0) {
+          <div class="flex flex-wrap gap-2">
+            @for (uri of redirectUris; track uri) {
+              <span hlmBadge variant="secondary">
+                {{ uri }}
+                <button hlmBtn variant="ghost" size="icon-xs" type="button" [attr.aria-label]="'Quitar ' + uri" (click)="removeRedirectUri(uri)">
+                  <ng-icon name="lucideX" />
+                </button>
+              </span>
+            }
+          </div>
+        }
+      }
+      <input
+        id="redirect_uris"
+        hlmInput
+        type="url"
+        autocomplete="off"
+        [value]="redirectUriDraft()"
+        placeholder="https://sistema.ejemplo/callback"
+        (input)="updateRedirectUriDraft($event)"
+        (blur)="commitRedirectUris()"
+        (keydown.enter)="commitRedirectUris($event)"
+        (keydown.tab)="commitRedirectUris($event)"
+      />
+      <p hlmFieldDescription>Puede agregar varias URIs separándolas con coma o presionando Enter/Tab.</p>
+      @if (formUtils.isInvalid(applicationForm.controls['redirectUris'])) {
+        <hlm-field-error>Agregue al menos una URL de redirección.</hlm-field-error>
+      }
+    </div>
+
+    <div hlmField>
+      <label hlmFieldLabel for="code">Identificador único</label>
+      <input id="code" hlmInput autocomplete="off" formControlName="clientId" />
+      @if (formUtils.isInvalid(applicationForm.controls['clientId'])) {
+        <hlm-field-error>Use entre 3 y 100 letras, números, guiones o guiones bajos.</hlm-field-error>
+      }
+    </div>
+
+    <div hlmField>
+      <label hlmFieldLabel for="launchUrl">URL de inicio</label>
+      <input id="launchUrl" hlmInput type="url" autocomplete="off" formControlName="launchUrl" />
+      @if (formUtils.isInvalid(applicationForm.controls['launchUrl'])) {
+        <hlm-field-error>La URL de inicio es obligatoria.</hlm-field-error>
+      }
+    </div>
+
+    <div hlmField orientation="horizontal">
+      <input id="color" hlmInput class="w-16 p-1" type="color" formControlName="color" />
+      <label hlmFieldLabel for="color">Color del sistema</label>
+    </div>
+
+    <div hlmField orientation="horizontal">
+      <hlm-checkbox inputId="applicationStatus" formControlName="isActive" />
+      <label hlmFieldLabel for="applicationStatus">Habilitado</label>
     </div>
   </div>
-  <div class="p-dialog-footer">
-    <p-button
-      type="button"
-      label="Cancelar"
-      type="button"
-      severity="secondary"
-      (onClick)="close()"
-    />
-    <p-button label="Guardar" type="submit" />
-  </div>
+
+  <hlm-dialog-footer class="border-t border-border pt-4">
+    <button hlmBtn type="button" variant="secondary" (click)="close()">Cancelar</button>
+    <button hlmBtn type="submit">Guardar</button>
+  </hlm-dialog-footer>
 </form>

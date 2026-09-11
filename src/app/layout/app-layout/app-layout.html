@@ -1,13 +1,15 @@
-<div class="flex h-screen bg-surface-50 overflow-hidden">
+<div class="flex h-screen overflow-hidden bg-muted/30">
   @if (!isMobile()) {
-    <aside class="w-64 shrink-0 border-r border-surface-200 bg-surface-0">
+    <aside class="w-64 shrink-0 border-r border-border bg-sidebar text-sidebar-foreground">
       <app-sidebar [user]="user()" />
     </aside>
   }
   <div class="flex-1 flex flex-col min-w-0">
-    <header class="h-14 flex items-center gap-3 border-b border-surface-200 bg-surface-0 px-4">
+    <header class="flex h-14 items-center gap-3 border-b border-border bg-background px-4">
       @if (isMobile()) {
-        <p-button icon="pi pi-bars" [text]="true" (click)="openMobileMenu()" />
+        <button hlmBtn variant="ghost" size="icon" type="button" aria-label="Abrir menú" (click)="openMobileMenu()">
+          <ng-icon name="lucideMenu" />
+        </button>
       }
       <div class="flex-1"></div>
       <profile-overlay />
@@ -19,16 +21,12 @@
   </div>
 </div>
 
-<p-drawer
-  position="left"
-  [modal]="true"
-  header="Menu"
-  [dismissible]="true"
-  [(visible)]="mobileMenuOpen"
-  styleClass="w-64 bg-surface-0"
-  (onHide)="closeMobileMenu()"
->
-  <app-sidebar [user]="user()" />
-</p-drawer>
-
-<p-toast [breakpoints]="{ '921px': { width: '90%', right: '10', left: '10' } }" />
+<hlm-sheet side="left" [state]="mobileMenuOpen() ? 'open' : 'closed'" (closed)="closeMobileMenu()">
+  <hlm-sheet-content *hlmSheetPortal class="w-64 p-0">
+    <hlm-sheet-header class="sr-only">
+      <h2 hlmSheetTitle>Menú</h2>
+      <p hlmSheetDescription>Navegación principal</p>
+    </hlm-sheet-header>
+    <app-sidebar [user]="user()" />
+  </hlm-sheet-content>
+</hlm-sheet>

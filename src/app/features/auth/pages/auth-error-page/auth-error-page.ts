@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
+import { NgIcon } from '@ng-icons/core';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { map } from 'rxjs';
 
 type AuthErrorView = {
@@ -45,22 +44,22 @@ const DEFAULT_ERROR: AuthErrorView = {
 
 @Component({
   selector: 'app-auth-error-page',
-  imports: [ButtonModule, TagModule, RouterLink],
+  imports: [NgIcon, HlmButtonImports, RouterLink],
   template: `
     <main
-      class="min-h-screen bg-surface-50 text-surface-900 flex items-center justify-center px-4 py-10"
+      class="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10 text-foreground"
     >
       <section
-        class="w-full max-w-lg overflow-hidden rounded-3xl border border-surface-200 bg-surface-0 shadow-xl"
+        class="w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-card shadow-xl"
       >
-        <div class="h-1.5 bg-red-500"></div>
+        <div class="h-1.5 bg-destructive"></div>
 
         <div class="px-6 py-8 sm:px-10 sm:py-10">
           <div class="flex justify-center">
             <div
-              class="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-600 ring-8 ring-red-100"
+              class="flex size-20 items-center justify-center rounded-full bg-destructive/10 text-destructive ring-8 ring-destructive/10"
             >
-              <i class="pi pi-exclamation-triangle" style="font-size:32px;"></i>
+              <ng-icon name="lucideTriangleAlert" class="text-[length:--spacing(8)]" />
             </div>
           </div>
 
@@ -69,28 +68,25 @@ const DEFAULT_ERROR: AuthErrorView = {
               {{ errorView().title }}
             </h1>
 
-            <p class="mt-4 text-base leading-7 text-surface-600">
+            <p class="mt-4 text-base leading-7 text-muted-foreground">
               {{ errorView().message }}
             </p>
           </div>
 
           <div
-            class="mt-7 rounded-2xl border border-surface-200 bg-surface-50 px-4 py-4 text-center"
+            class="mt-7 rounded-2xl border border-border bg-muted/50 px-4 py-4 text-center"
           >
-            <p class="text-xs text-surface-500">
+            <p class="text-xs text-muted-foreground">
               Código de referencia:
               <span class="font-mono font-medium">{{ errorCode() }}</span>
             </p>
           </div>
 
           <div class="mt-8 flex justify-center">
-            <p-button
-              [outlined]="true"
-              label="Volver al inicio de sesión"
-              icon="pi pi-sign-in"
-              routerLink="/login"
-              styleClass="w-full sm:w-auto"
-            />
+            <a hlmBtn variant="outline" routerLink="/login" class="w-full sm:w-auto">
+              <ng-icon name="lucideLogIn" />
+              Volver al inicio de sesión
+            </a>
           </div>
         </div>
       </section>

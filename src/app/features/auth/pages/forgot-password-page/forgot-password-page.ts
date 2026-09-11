@@ -3,10 +3,12 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { MessageModule } from 'primeng/message';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { AuthDataSource } from '../../../../core';
 import { AppIcon } from '../../../../shared';
@@ -16,69 +18,75 @@ const GENERIC_RESULT =
 
 @Component({
   selector: 'app-forgot-password-page',
-  imports: [ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule, AppIcon],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    NgIcon,
+    HlmAlertImports,
+    HlmButtonImports,
+    HlmFieldImports,
+    HlmInputImports,
+    HlmSpinnerImports,
+    AppIcon,
+  ],
   template: `
-    <main class="flex min-h-screen flex-col bg-surface-50 text-surface-900">
+    <main class="flex min-h-screen flex-col bg-muted/30 text-foreground">
       <section class="flex flex-1 items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
         <div class="w-full max-w-md">
           <div
-            class="rounded-xl border border-surface-200 bg-surface-0 px-5 py-7 shadow-md sm:px-8 sm:py-9"
+            class="rounded-xl border border-border bg-card px-5 py-7 shadow-md sm:px-8 sm:py-9"
           >
             <div class="flex flex-col items-center text-center">
-              <app-icon class="h-14 w-14 text-primary-600 sm:h-16 sm:w-16" />
-              <h1 class="mt-2 text-xl font-semibold text-surface-950 sm:text-2xl">
+              <app-icon class="size-14 text-primary sm:size-16" />
+              <h1 class="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
                 Recuperar contraseña
               </h1>
-              <p class="mt-2 text-sm leading-6 text-surface-600">
+              <p class="mt-2 text-sm leading-6 text-muted-foreground">
                 Ingrese su nombre de usuario o correo institucional.
               </p>
             </div>
 
             @if (sent()) {
-              <div class="mt-8 space-y-5">
-                <p-message severity="success" class="w-full" role="status" aria-live="polite">
-                  {{ genericResult }}
-                </p-message>
-                <p-button label="Volver al inicio de sesión" routerLink="/login" [fluid]="true" />
+              <div class="mt-8 flex flex-col gap-5">
+                <div hlmAlert role="status" aria-live="polite">
+                  <ng-icon name="lucideCircleCheck" class="text-primary" />
+                  <div><h2 hlmAlertTitle>Solicitud recibida</h2><p hlmAlertDescription>{{ genericResult }}</p></div>
+                </div>
+                <a hlmBtn routerLink="/login" class="w-full">Volver al inicio de sesión</a>
               </div>
             } @else {
-              <form class="mt-8 space-y-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-                <div class="space-y-1.5">
-                  <label for="identifier" class="block text-sm font-medium text-surface-900">
-                    Usuario o correo
-                  </label>
+              <form class="mt-8 flex flex-col gap-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+                <div hlmField>
+                  <label hlmFieldLabel for="identifier">Usuario o correo</label>
                   <input
-                    pInputText
+                    hlmInput
                     id="identifier"
                     type="text"
-                    class="w-full"
                     autocomplete="username"
                     formControlName="identifier"
                     placeholder="Usuario o correo institucional"
                   />
                   @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
-                    <small class="text-red-600">Ingrese su usuario o correo.</small>
+                    <hlm-field-error>Ingrese su usuario o correo.</hlm-field-error>
                   }
                 </div>
 
                 @if (errorMessage()) {
-                  <p-message severity="error" class="w-full" role="alert" aria-live="polite">
-                    {{ errorMessage() }}
-                  </p-message>
+                  <div hlmAlert variant="destructive" aria-live="polite">
+                    <ng-icon name="lucideTriangleAlert" />
+                    <div><h2 hlmAlertTitle>Error</h2><p hlmAlertDescription>{{ errorMessage() }}</p></div>
+                  </div>
                 }
 
-                <p-button
-                  type="submit"
-                  label="Solicitar recuperación"
-                  [loading]="isSubmitting()"
-                  [disabled]="form.invalid || isSubmitting()"
-                  [fluid]="true"
-                />
+                <button hlmBtn class="w-full" type="submit" [disabled]="form.invalid || isSubmitting()">
+                  @if (isSubmitting()) { <hlm-spinner /> }
+                  Solicitar recuperación
+                </button>
               </form>
-              <div class="mt-6 border-t border-surface-200 pt-4 text-center">
+              <div class="mt-6 border-t border-border pt-4 text-center">
                 <a
                   routerLink="/login"
-                  class="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline"
+                  class="text-sm font-medium text-primary hover:underline"
                 >
                   Volver al inicio de sesión
                 </a>

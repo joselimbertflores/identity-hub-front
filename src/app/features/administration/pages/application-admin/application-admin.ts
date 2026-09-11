@@ -1,35 +1,53 @@
-import { Component, inject, linkedSignal, signal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogService } from '@spartan-ng/helm/dialog';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
+import { HlmPaginationImports } from '@spartan-ng/helm/pagination';
+import { HlmTableImports } from '@spartan-ng/helm/table';
 
-import { TableModule, TablePageEvent } from 'primeng/table';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService, MenuItem } from 'primeng/api';
-import { DialogService } from 'primeng/dynamicdialog';
-import { ButtonModule } from 'primeng/button';
-import { MenuModule } from 'primeng/menu';
-import { TagModule } from 'primeng/tag';
-
-import { ApplicationEditor, ClientSecretDialog } from '../../dialogs';
+import {
+  ApplicationEditor,
+  ApplicationEditorResult,
+  ClientSecretDialog,
+} from '../../dialogs';
 import { ApplicationDataSource } from '../../services';
 import { SearchInput } from '../../../../shared';
 import { ApplicationResponse } from '../../interfaces';
 
 @Component({
   selector: 'app-application-admin',
-  imports: [ButtonModule, TableModule, SearchInput, ConfirmDialogModule, MenuModule, TagModule],
+  imports: [
+    NgIcon,
+    HlmAlertDialogImports,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDropdownMenuImports,
+    HlmPaginationImports,
+    HlmTableImports,
+    SearchInput,
+  ],
   templateUrl: './application-admin.html',
   changeDetection: ChangeDetectionStrategy.Eager,
-  providers: [DialogService, ConfirmationService],
 })
 export default class ApplicationAdmin {
-  private dialogService = inject(DialogService);
-  private applicationApi = inject(ApplicationDataSource);
-  private confirmationService = inject(ConfirmationService);
+  private readonly dialogService = inject(HlmDialogService);
+  private readonly applicationApi = inject(ApplicationDataSource);
 
-  limit = signal(10);
-  offset = signal(0);
-  searchTerm = signal('');
-  roleResource = rxResource({
+  readonly limit = signal(10);
+  readonly offset = signal(0);
+  readonly searchTerm = signal('');
+  readonly roleResource = rxResource({
     params: () => ({
       offset: this.offset(),
       limit: this.limit(),
@@ -38,34 +56,26 @@ export default class ApplicationAdmin {
     stream: ({ params }) => this.applicationApi.findAll(params.limit, params.offset, params.term),
   });
 
-  dataSource = linkedSignal(() => {
+  readonly dataSource = linkedSignal(() => {
     if (!this.roleResource.hasValue()) return [];
     return this.roleResource.value().clients;
   });
 
-  dataSize = linkedSignal(() => {
+  readonly dataSize = linkedSignal(() => {
     if (!this.roleResource.hasValue()) return 0;
     return this.roleResource.value().total;
   });
 
-  menuItems: MenuItem[] = [];
+  readonly currentPage = computed(() => Math.floor(this.offset() / this.limit()) + 1);
+  readonly pendingSecretRegeneration = signal<ApplicationResponse | null>(null);
 
-  openApplicationDialog(app?: ApplicationResponse) {
-    const dialogRef = this.dialogService.open(ApplicationEditor, {
-      header: app ? 'Editar sistema' : 'Crear sistema',
-      modal: true,
-      draggable: false,
-      closeOnEscape: true,
-      closable: true,
-      width: '40vw',
-      data: app,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
+  openApplicationDialog(app?: ApplicationResponse): void {
+    const dialogRef = this.dialogService.open<ApplicationEditorResult>(ApplicationEditor, {
+      context: { application: app },
+      contentClass: 'sm:!max-w-2xl',
     });
-    dialogRef?.onClose.subscribe(
-      (result?: { application: ApplicationResponse; clientSecret?: string }) => {
+    dialogRef.closed$.subscribe(
+      (result) => {
         if (!result) return;
         if (result.clientSecret) {
           this.showClientSecretDialog(result.application, result.clientSecret);
@@ -75,53 +85,22 @@ export default class ApplicationAdmin {
     );
   }
 
-  confirmRegenerateSecret(application: ApplicationResponse) {
-    this.confirmationService.confirm({
-      header: 'Regenerar secreto',
-      message: `El secreto actual de "${application.name}" dejará de funcionar inmediatamente. ¿Deseas continuar?`,
-      rejectButtonProps: {
-        label: 'Cancelar',
-        severity: 'secondary',
-        outlined: true,
-      },
-      acceptButtonProps: {
-        label: 'Regenerar',
-        severity: 'primary',
-      },
-      accept: () => {
-        this.regenerateSecret(application);
-      },
-    });
+  confirmRegenerateSecret(application: ApplicationResponse): void {
+    this.pendingSecretRegeneration.set(application);
   }
 
-  openMenu(row: ApplicationResponse) {
-    this.menuItems = [
-      {
-        label: 'Opciones',
-        items: [
-          {
-            label: 'Editar',
-            icon: 'pi pi-pencil',
-            command: () => this.openApplicationDialog(row),
-          },
-          {
-            label: 'Regenerar secreto',
-            icon: 'pi pi-key',
-            command: () => this.confirmRegenerateSecret(row),
-          },
-        ],
-      },
-    ];
-  }
-
-  search(term: string) {
+  search(term: string): void {
     this.offset.set(0);
     this.searchTerm.set(term);
   }
 
-  changePage(event: TablePageEvent) {
-    this.limit.set(event.rows);
-    this.offset.set(event.first);
+  changePage(page: number): void {
+    this.offset.set((page - 1) * this.limit());
+  }
+
+  changePageSize(limit: number): void {
+    this.limit.set(limit);
+    this.offset.set(0);
   }
 
   private updateItemDataSource(item: ApplicationResponse): void {
@@ -137,7 +116,7 @@ export default class ApplicationAdmin {
     }
   }
 
-  private regenerateSecret(application: ApplicationResponse) {
+  regenerateSecret(application: ApplicationResponse): void {
     this.applicationApi.regenerateSecret(application.id).subscribe(({ clientSecret }) => {
       this.showClientSecretDialog(application, clientSecret);
     });
@@ -145,17 +124,8 @@ export default class ApplicationAdmin {
 
   private showClientSecretDialog(application: ApplicationResponse, clientSecret: string): void {
     this.dialogService.open(ClientSecretDialog, {
-      header: 'Nuevo secreto generado',
-      closeOnEscape: true,
-      draggable: false,
-      closable: true,
-      modal: true,
-      width: '40vw',
-      data: { application, clientSecret },
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
+      context: { application, clientSecret },
+      contentClass: 'sm:!max-w-xl',
     });
   }
 }

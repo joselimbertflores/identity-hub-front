@@ -1,35 +1,25 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { RouterModule } from '@angular/router';
-
-import { DrawerModule } from 'primeng/drawer';
-import { ButtonModule } from 'primeng/button';
-import { AvatarModule } from 'primeng/avatar';
-import { ToastModule } from 'primeng/toast';
+import { NgIcon } from '@ng-icons/core';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 
 import { ProfileOverlay, AppSidebar } from './components';
 import { AuthDataSource } from '../../core';
 
 @Component({
   selector: 'app-app-layout',
-  imports: [
-    RouterModule,
-    DrawerModule,
-    ButtonModule,
-    AvatarModule,
-    ProfileOverlay,
-    ToastModule,
-    AppSidebar,
-  ],
+  imports: [RouterModule, NgIcon, HlmButtonImports, HlmSheetImports, ProfileOverlay, AppSidebar],
   templateUrl: './app-layout.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class AppLayout {
-  private authDataSource = inject(AuthDataSource);
-  
-  isMobile = signal(false);
-  mobileMenuOpen = signal(false);
-  user = this.authDataSource.user;
+  private readonly authDataSource = inject(AuthDataSource);
+
+  readonly isMobile = signal(false);
+  readonly mobileMenuOpen = signal(false);
+  readonly user = this.authDataSource.user;
 
   constructor(private breakpoint: BreakpointObserver) {
     this.breakpoint.observe('(max-width: 1023px)').subscribe(({ matches }) => {
@@ -40,11 +30,11 @@ export default class AppLayout {
     });
   }
 
-  openMobileMenu() {
+  openMobileMenu(): void {
     this.mobileMenuOpen.set(true);
   }
 
-  closeMobileMenu() {
+  closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
   }
 }

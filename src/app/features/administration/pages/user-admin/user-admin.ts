@@ -1,13 +1,20 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, linkedSignal, signal, ChangeDetectionStrategy } from '@angular/core';
+import { TitleCasePipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-
-import { ButtonModule } from 'primeng/button';
-import { DialogService } from 'primeng/dynamicdialog';
-import { MenuItem } from 'primeng/api';
-import { MenuModule } from 'primeng/menu';
-import { TableModule, TablePageEvent } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
+import { NgIcon } from '@ng-icons/core';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogService } from '@spartan-ng/helm/dialog';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
+import { HlmPaginationImports } from '@spartan-ng/helm/pagination';
+import { HlmTableImports } from '@spartan-ng/helm/table';
 
 import { SearchInput } from '../../../../shared';
 import { PasswordActionDialog, PasswordActionOperation, UserEditor } from '../../dialogs';
@@ -16,13 +23,21 @@ import { UserDataSource } from '../../services';
 
 @Component({
   selector: 'app-user-admin',
-  imports: [CommonModule, ButtonModule, TableModule, SearchInput, MenuModule, TagModule],
+  imports: [
+    TitleCasePipe,
+    NgIcon,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmDropdownMenuImports,
+    HlmPaginationImports,
+    HlmTableImports,
+    SearchInput,
+  ],
   templateUrl: './user-admin.html',
   changeDetection: ChangeDetectionStrategy.Eager,
-  providers: [DialogService],
 })
 export default class UserAdmin {
-  private readonly dialogService = inject(DialogService);
+  private readonly dialogService = inject(HlmDialogService);
   private readonly userApi = inject(UserDataSource);
 
   readonly limit = signal(10);
@@ -47,48 +62,28 @@ export default class UserAdmin {
     return this.roleResource.value().total;
   });
 
-  readonly menuOptions = signal<MenuItem[]>([]);
-  menuItems: MenuItem[] = [];
+  readonly currentPage = computed(() => Math.floor(this.offset() / this.limit()) + 1);
 
   openUserDialog(user?: UserResponse): void {
-    const dialogRef = this.dialogService.open(UserEditor, {
-      header: user ? 'Editar usuario' : 'Crear usuario',
-      modal: true,
-      draggable: false,
-      closeOnEscape: false,
-      closable: false,
-      width: '44rem',
-      data: user,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '94vw',
-      },
+    const dialogRef = this.dialogService.open<UserResponse>(UserEditor, {
+      context: { user },
+      contentClass: 'sm:!max-w-3xl',
+      showCloseButton: false,
+      disableClose: true,
     });
-    dialogRef?.onClose.subscribe((result?: UserResponse) => {
+    dialogRef.closed$.subscribe((result) => {
       if (result) this.updateItemDataSource(result);
     });
   }
 
   openPasswordActionDialog(user: UserResponse, operation: PasswordActionOperation): void {
-    const dialogRef = this.dialogService.open(PasswordActionDialog, {
-      header:
-        operation === 'reset'
-          ? 'Restablecer contraseña'
-          : user.passwordAction?.purpose === 'INITIAL_SETUP'
-            ? 'Reenviar enlace de configuración'
-            : 'Reenviar enlace de restablecimiento',
-      modal: true,
-      draggable: false,
-      closeOnEscape: false,
-      closable: false,
-      width: '46rem',
-      data: { user, operation },
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '94vw',
-      },
+    const dialogRef = this.dialogService.open<UserResponse | null>(PasswordActionDialog, {
+      context: { user, operation },
+      contentClass: 'sm:!max-w-3xl',
+      showCloseButton: false,
+      disableClose: true,
     });
-    dialogRef?.onClose.subscribe((result?: UserResponse) => {
+    dialogRef.closed$.subscribe((result) => {
       if (result) this.updateItemDataSource(result);
     });
   }
@@ -98,47 +93,20 @@ export default class UserAdmin {
     this.searchTerm.set(term);
   }
 
-  changePage(event: TablePageEvent): void {
-    this.limit.set(event.rows);
-    this.offset.set(event.first);
+  changePage(page: number): void {
+    this.offset.set((page - 1) * this.limit());
   }
 
-  openMenu(row: UserResponse): void {
-    const passwordAction = this.getPasswordActionMenuItem(row);
-    this.menuItems = [
-      {
-        label: 'Opciones',
-        items: [
-          {
-            label: 'Editar',
-            icon: 'pi pi-pencil',
-            command: () => this.openUserDialog(row),
-          },
-          ...(passwordAction ? [passwordAction] : []),
-        ],
-      },
-    ];
+  changePageSize(limit: number): void {
+    this.limit.set(limit);
+    this.offset.set(0);
   }
 
-  private getPasswordActionMenuItem(user: UserResponse): MenuItem | null {
-    if (!user.isActive) return null;
-
-    if (!user.passwordAction) {
-      return {
-        label: 'Restablecer contraseña',
-        icon: 'pi pi-sync',
-        command: () => this.openPasswordActionDialog(user, 'reset'),
-      };
-    }
-
-    return {
-      label:
-        user.passwordAction.purpose === 'INITIAL_SETUP'
-          ? 'Reenviar enlace de configuración'
-          : 'Reenviar enlace de restablecimiento',
-      icon: 'pi pi-send',
-      command: () => this.openPasswordActionDialog(user, 'resend'),
-    };
+  passwordActionLabel(user: UserResponse): string {
+    if (!user.passwordAction) return 'Restablecer contraseña';
+    return user.passwordAction.purpose === 'INITIAL_SETUP'
+      ? 'Reenviar enlace de configuración'
+      : 'Reenviar enlace de restablecimiento';
   }
 
   private updateItemDataSource(item: UserResponse): void {

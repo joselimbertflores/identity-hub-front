@@ -3,11 +3,13 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
-
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { MessageModule } from 'primeng/message';
-import { PasswordModule } from 'primeng/password';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { AuthDataSource } from '../../../../core';
 import { FormUtils } from '../../../../helpers';
@@ -23,10 +25,13 @@ import {
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    ButtonModule,
-    InputTextModule,
-    MessageModule,
-    PasswordModule,
+    NgIcon,
+    HlmAlertImports,
+    HlmButtonImports,
+    HlmFieldImports,
+    HlmInputImports,
+    HlmInputGroupImports,
+    HlmSpinnerImports,
     AppIcon,
   ],
   templateUrl: './set-password-page.html',
@@ -43,6 +48,8 @@ export default class SetPasswordPage {
   readonly completed = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly linkCode = signal<string | null>(null);
+  readonly hideNewPassword = signal(true);
+  readonly hidePasswordConfirmation = signal(true);
   readonly isLinkMode = computed(() => this.linkCode() !== null);
   readonly form = this.formBuilder.nonNullable.group(
     {

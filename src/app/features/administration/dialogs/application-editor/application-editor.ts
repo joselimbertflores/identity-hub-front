@@ -1,44 +1,58 @@
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ColorPickerModule } from 'primeng/colorpicker';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { InputTextModule } from 'primeng/inputtext';
-import { CheckboxModule } from 'primeng/checkbox';
-import { MessageModule } from 'primeng/message';
-import { ButtonModule } from 'primeng/button';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { NgIcon } from '@ng-icons/core';
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import {
+  HlmDialogFooter,
+  HlmDialogHeader,
+  HlmDialogTitle,
+} from '@spartan-ng/helm/dialog';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInputImports } from '@spartan-ng/helm/input';
 
 import { ApplicationResponse } from '../../interfaces';
 import { ApplicationDataSource } from '../../services';
 import { FormUtils } from '../../../../helpers';
 
+export interface ApplicationEditorContext {
+  application?: ApplicationResponse;
+}
+
+export interface ApplicationEditorResult {
+  application: ApplicationResponse;
+  clientSecret?: string;
+}
+
 @Component({
   selector: 'app-application-editor',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
-    FloatLabelModule,
-    InputTextModule,
-    ButtonModule,
-    AutoCompleteModule,
-    ColorPickerModule,
-    MessageModule,
-    CheckboxModule,
+    NgIcon,
+    HlmBadgeImports,
+    HlmButtonImports,
+    HlmCheckboxImports,
+    HlmDialogFooter,
+    HlmDialogHeader,
+    HlmDialogTitle,
+    HlmFieldImports,
+    HlmInputImports,
   ],
   templateUrl: './application-editor.html',
+  host: { class: 'flex flex-col gap-4' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ApplicationEditor {
-  private _formBuilder = inject(FormBuilder);
-  private dialogRef = inject(DynamicDialogRef);
-  private clientDataSource = inject(ApplicationDataSource);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly dialogRef = inject<BrnDialogRef<ApplicationEditorResult>>(BrnDialogRef);
+  private readonly clientDataSource = inject(ApplicationDataSource);
 
-  readonly data?: ApplicationResponse = inject(DynamicDialogConfig).data;
+  readonly data = injectBrnDialogContext<ApplicationEditorContext>().application;
+  readonly redirectUriDraft = signal('');
 
-  applicationForm: FormGroup = this._formBuilder.nonNullable.group({
+  applicationForm: FormGroup = this.formBuilder.nonNullable.group({
     name: ['', Validators.required],
     clientId: [
       '',
@@ -57,13 +71,14 @@ export class ApplicationEditor {
     color: ['#2B7FFF'],
   });
 
-  formUtils = FormUtils;
+  readonly formUtils = FormUtils;
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadForm();
   }
 
-  save() {
+  save(): void {
+    this.commitRedirectUris();
     if (this.applicationForm.invalid) {
       this.applicationForm.markAllAsTouched();
       return;
@@ -82,16 +97,39 @@ export class ApplicationEditor {
     }
   }
 
-  close() {
+  close(): void {
     this.dialogRef.close();
   }
 
-  preventSubmit(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
+  updateRedirectUriDraft(event: Event): void {
+    const input = event.target;
+    if (input instanceof HTMLInputElement) this.redirectUriDraft.set(input.value);
   }
 
-  private loadForm() {
+  commitRedirectUris(event?: Event): void {
+    if (event instanceof KeyboardEvent && event.key === 'Enter') event.preventDefault();
+
+    const additions = this.redirectUriDraft()
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+    if (additions.length === 0) return;
+
+    const control = this.applicationForm.controls['redirectUris'];
+    const current = (control.value as string[]) ?? [];
+    control.setValue([...new Set([...current, ...additions])]);
+    control.markAsDirty();
+    this.redirectUriDraft.set('');
+  }
+
+  removeRedirectUri(uri: string): void {
+    const control = this.applicationForm.controls['redirectUris'];
+    const current = (control.value as string[]) ?? [];
+    control.setValue(current.filter((value) => value !== uri));
+    control.markAsDirty();
+  }
+
+  private loadForm(): void {
     if (this.data) {
       this.applicationForm.controls['clientId'].disable();
       this.applicationForm.patchValue(this.data);

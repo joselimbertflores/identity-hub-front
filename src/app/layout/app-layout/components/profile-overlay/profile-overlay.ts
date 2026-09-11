@@ -1,59 +1,46 @@
-import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-
-import { Popover, PopoverModule } from 'primeng/popover';
-import { ButtonModule } from 'primeng/button';
-import { AvatarModule } from 'primeng/avatar';
-import { RippleModule } from 'primeng/ripple';
-import { MenuItem } from 'primeng/api';
-import { Menu } from 'primeng/menu';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAvatarImports } from '@spartan-ng/helm/avatar';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 
 import { AuthDataSource } from '../../../../core';
-
-
-
 @Component({
   selector: 'profile-overlay',
-  imports: [AvatarModule, PopoverModule, CommonModule, ButtonModule, Menu, RippleModule],
+  imports: [TitleCasePipe, NgIcon, HlmAvatarImports, HlmButtonImports, HlmPopoverImports],
   template: `
-    <p-avatar pRipple icon="pi pi-user" shape="circle" (click)="op.toggle($event)" />
-    <p-popover #op [focusOnShow]="false">
-      <ng-template pTemplate="content">
-        <div class="w-[300px]">
-          <div class="flex flex-col space-y-3 items-center">
-            <div class="w-full flex justify-end">
-              <p-button
-                icon="pi pi-times"
-                severity="secondary"
-                [rounded]="true"
-                [text]="true"
-                (click)="op.hide()"
-                size="small"
-              />
-            </div>
-            <div>
-              <p-avatar icon="pi pi-user" size="xlarge" shape="circle" />
-            </div>
-            <span class="font-semibold text-lg text-surface-800">
-              {{ $safeNavigationMigration(user()?.fullName) | titlecase }}
-            </span>
-            <p-menu [model]="menuOptions" class="w-full">
-              <ng-template #item let-item>
-                <a
-                  pRipple
-                  class="flex items-center px-3 py-2 cursor-pointer"
-                  [class]="item.linkClass"
-                >
-                  <span [class]="item.icon"></span>
-                  <span class="ml-3">{{ item.label }}</span>
-                </a>
-              </ng-template>
-            </p-menu>
-          </div>
+    <hlm-popover
+      align="end"
+      [state]="open() ? 'open' : 'closed'"
+      (stateChanged)="open.set($event === 'open')"
+    >
+      <button hlmPopoverTrigger hlmBtn variant="ghost" size="icon" aria-label="Abrir perfil">
+        <hlm-avatar>
+          <span hlmAvatarFallback><ng-icon name="lucideUser" /></span>
+        </hlm-avatar>
+      </button>
+      <hlm-popover-content *hlmPopoverPortal class="w-[300px]">
+        <hlm-popover-header class="items-center text-center">
+          <hlm-avatar class="size-16">
+            <span hlmAvatarFallback><ng-icon name="lucideUser" /></span>
+          </hlm-avatar>
+          <h2 hlmPopoverTitle>{{ user()?.fullName | titlecase }}</h2>
+          <p hlmPopoverDescription>Cuenta institucional</p>
+        </hlm-popover-header>
+        <div class="mt-3 flex flex-col gap-1 border-t border-border pt-3">
+          <button hlmBtn variant="ghost" class="justify-start" type="button" (click)="setting()">
+            <ng-icon name="lucideSettings" />
+            Configuración
+          </button>
+          <button hlmBtn variant="ghost" class="justify-start text-destructive" type="button" (click)="logout()">
+            <ng-icon name="lucideLogOut" />
+            Cerrar sesión
+          </button>
         </div>
-      </ng-template>
-    </p-popover>
+      </hlm-popover-content>
+    </hlm-popover>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -61,33 +48,18 @@ export class ProfileOverlay {
   private router = inject(Router);
   private authDataSource = inject(AuthDataSource);
 
-  readonly poppoverRef = viewChild.required<Popover>('op');
-
-  user = this.authDataSource.user;
-
-  readonly menuOptions: MenuItem[] = [
-    {
-      label: 'Configuración',
-      icon: 'pi pi-cog',
-      command: () => this.setting(),
-    },
-    {
-      label: 'Cerrar sesión',
-      icon: 'pi pi-sign-out',
-      linkClass: 'text-red-500',
-      command: () => this.logout(),
-    },
-  ];
+  readonly open = signal(false);
+  readonly user = this.authDataSource.user;
 
   setting() {
-    this.poppoverRef().hide();
-    this.router.navigate(['/home/settings']);
+    this.open.set(false);
+    void this.router.navigate(['/home/settings']);
   }
 
   logout() {
     this.authDataSource.logout().subscribe(() => {
-      this.poppoverRef().hide();
-      this.router.navigate(['/login']);
+      this.open.set(false);
+      void this.router.navigate(['/login']);
     });
   }
 }

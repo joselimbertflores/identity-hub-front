@@ -2,12 +2,14 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-
-import { InputTextModule } from 'primeng/inputtext';
-import { CheckboxModule } from 'primeng/checkbox';
-import { PasswordModule } from 'primeng/password';
-import { ButtonModule } from 'primeng/button';
-import { Message } from 'primeng/message';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInputImports } from '@spartan-ng/helm/input';
+import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { environment } from '../../../../../environments/environment';
 import { AppIcon } from '../../../../shared';
@@ -21,131 +23,116 @@ const ERROR_MESSAGES: Record<string, string> = {
   selector: 'app-login-page',
   imports: [
     ReactiveFormsModule,
-    CheckboxModule,
-    InputTextModule,
-    PasswordModule,
-    ButtonModule,
-    Message,
+    NgIcon,
+    HlmAlertImports,
+    HlmButtonImports,
+    HlmCheckboxImports,
+    HlmFieldImports,
+    HlmInputImports,
+    HlmInputGroupImports,
+    HlmSpinnerImports,
     AppIcon,
     RouterLink,
   ],
   template: `
-    <main class="flex min-h-screen flex-col bg-surface-50 text-surface-900">
+    <main class="flex min-h-screen flex-col bg-muted/30 text-foreground">
       <section
         class="flex flex-1 items-center justify-center px-4 py-8 sm:px-6 lg:px-8"
         aria-labelledby="login-title"
       >
         <div class="w-full max-w-md">
           <div
-            class="rounded-xl border border-surface-200 bg-surface-0 px-5 py-7 shadow-md sm:px-8 sm:py-9"
+            class="rounded-xl border border-border bg-card px-5 py-7 shadow-md sm:px-8 sm:py-9"
           >
             <div class="flex flex-col items-center text-center">
-              <app-icon class="h-14 w-14 text-primary-600 sm:h-16 sm:w-16" />
+              <app-icon class="size-14 text-primary sm:size-16" />
 
               <h1
                 id="login-title"
-                class="mt-2 text-xl font-semibold leading-tight text-surface-950 sm:text-2xl"
+                class="mt-2 text-xl font-semibold leading-tight text-foreground sm:text-2xl"
               >
                 Sistema Institucional de Autenticación y Acceso
               </h1>
 
-              <p id="login-description" class="mt-2 text-sm leading-6 text-surface-600">
+              <p id="login-description" class="mt-2 text-sm leading-6 text-muted-foreground">
                 Ingrese con sus credenciales institucionales para continuar.
               </p>
             </div>
 
             <form
-              class="mt-8 space-y-5"
+              class="mt-8 flex flex-col gap-5"
               [formGroup]="loginForm"
               (ngSubmit)="login()"
               aria-describedby="login-description"
               novalidate
             >
-              <fieldset class="space-y-5">
-                <legend class="sr-only">Credenciales de acceso</legend>
+              <fieldset hlmFieldSet>
+                <legend hlmFieldLegend class="sr-only">Credenciales de acceso</legend>
+                <div hlmFieldGroup>
 
-                <div class="space-y-1.5">
-                  <label for="login" class="block text-sm font-medium leading-6 text-surface-900">
-                    Nombre de usuario
-                  </label>
+                <div hlmField>
+                  <label hlmFieldLabel for="login">Nombre de usuario</label>
                   <input
-                    pInputText
+                    hlmInput
                     id="login"
                     type="text"
                     placeholder="Ingrese su nombre de usuario"
-                    class="w-full"
                     autocomplete="username"
                     formControlName="login"
-                    [disabled]="isSubmitting()"
                   />
                 </div>
 
-                <div class="space-y-1.5">
-                  <label
-                    for="password"
-                    class="block text-sm font-medium leading-6 text-surface-900"
-                  >
-                    Contraseña
-                  </label>
-                  <input
-                    pInputText
-                    id="password"
-                    type="password"
-                    placeholder="Ingrese su contraseña"
-                    class="w-full"
-                    autocomplete="current-password"
-                    formControlName="password"
-                    [disabled]="isSubmitting()"
-                  />
+                <div hlmField>
+                  <label hlmFieldLabel for="password">Contraseña</label>
+                  <div hlmInputGroup>
+                    <input hlmInputGroupInput id="password" [type]="hidePassword ? 'password' : 'text'" placeholder="Ingrese su contraseña" autocomplete="current-password" formControlName="password" />
+                    <span hlmInputGroupAddon align="inline-end">
+                      <button hlmInputGroupButton size="icon-xs" type="button" aria-label="Mostrar u ocultar contraseña" (click)="hidePassword = !hidePassword">
+                        <ng-icon [name]="hidePassword ? 'lucideEye' : 'lucideEyeOff'" />
+                      </button>
+                    </span>
+                  </div>
                 </div>
 
-                <div class="flex items-center gap-3 pt-1">
-                  <p-checkbox
-                    id="rememberme"
+                <div hlmField orientation="horizontal">
+                  <hlm-checkbox
+                    inputId="rememberme"
                     formControlName="remember"
-                    [binary]="true"
-                    [disabled]="isSubmitting()"
-                  ></p-checkbox>
-                  <label for="rememberme" class="text-sm leading-6 text-surface-700">
+                  />
+                  <label hlmFieldLabel for="rememberme">
                     Recordar nombre de usuario
                   </label>
+                </div>
                 </div>
               </fieldset>
 
               <div class="text-right">
                 <a
                   routerLink="/forgot-password"
-                  class="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline"
+                  class="text-sm font-medium text-primary hover:underline"
                 >
                   Olvidé mi contraseña
                 </a>
               </div>
 
               @if (errorMessage()) {
-                <p-message
-                  severity="error"
-                  class="w-full"
-                  aria-live="polite"
-                  role="alert"
-                  icon="pi pi-times-circle"
-                >
-                  {{ errorMessage() }}
-                </p-message>
+                <div hlmAlert variant="destructive" aria-live="polite">
+                  <ng-icon name="lucideTriangleAlert" />
+                  <div><h3 hlmAlertTitle>Error</h3><p hlmAlertDescription>{{ errorMessage() }}</p></div>
+                </div>
               }
 
               @if (successMessage()) {
-                <p-message
-                  severity="success"
-                  class="w-full"
-                  aria-live="polite"
-                  role="status"
-                  icon="pi pi-check-circle"
-                >
-                  {{ successMessage() }}
-                </p-message>
+                <div hlmAlert role="status" aria-live="polite">
+                  <ng-icon name="lucideCircleCheck" class="text-primary" />
+                  <div><h3 hlmAlertTitle>Operación completada</h3><p hlmAlertDescription>{{ successMessage() }}</p></div>
+                </div>
               }
 
-              <p-button type="submit" label="Ingresar" [loading]="isSubmitting()" [fluid]="true" />
+              <button hlmBtn class="w-full" type="submit" [disabled]="loginForm.invalid || isSubmitting()">
+                @if (isSubmitting()) { <hlm-spinner /> }
+                Ingresar
+              </button>
             </form>
           </div>
         </div>
@@ -185,6 +172,7 @@ export default class LoginPage {
     this.isSubmitting.set(true);
 
     const { login, password, remember } = this.loginForm.value;
+    this.loginForm.disable({ emitEvent: false });
 
     const url = new URL(window.location.href);
 

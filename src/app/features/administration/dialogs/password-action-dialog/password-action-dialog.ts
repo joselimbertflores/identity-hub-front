@@ -1,10 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
-
-import { ButtonModule } from 'primeng/button';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { MessageModule } from 'primeng/message';
+import { NgIcon } from '@ng-icons/core';
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import {
+  HlmDialogFooter,
+  HlmDialogHeader,
+  HlmDialogTitle,
+} from '@spartan-ng/helm/dialog';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { PasswordActionDeliveryView } from '../../components/password-action-delivery/password-action-delivery';
 import { PasswordActionDelivery, PasswordActionPurpose, UserResponse } from '../../interfaces';
@@ -12,68 +18,79 @@ import { UserDataSource } from '../../services';
 
 export type PasswordActionOperation = 'reset' | 'resend';
 
-interface PasswordActionDialogData {
+export interface PasswordActionDialogData {
   user: UserResponse;
   operation: PasswordActionOperation;
 }
 
 @Component({
   selector: 'app-password-action-dialog',
-  imports: [ButtonModule, MessageModule, PasswordActionDeliveryView],
+  imports: [
+    NgIcon,
+    HlmAlertImports,
+    HlmButtonImports,
+    HlmDialogFooter,
+    HlmDialogHeader,
+    HlmDialogTitle,
+    HlmSpinnerImports,
+    PasswordActionDeliveryView,
+  ],
+  host: { class: 'flex flex-col gap-4' },
   template: `
+    <hlm-dialog-header>
+      <h2 hlmDialogTitle>{{ dialogTitle }}</h2>
+    </hlm-dialog-header>
     @if (delivery(); as result) {
       <app-password-action-delivery [delivery]="result" [context]="data.operation" />
-      <div class="mt-6 flex justify-end border-t border-surface-200 pt-4">
-        <p-button label="Cerrar" type="button" (onClick)="close()" />
-      </div>
+      <hlm-dialog-footer class="mt-2 border-t border-border pt-4">
+        <button hlmBtn type="button" (click)="close()">Cerrar</button>
+      </hlm-dialog-footer>
     } @else {
-      <div class="space-y-5">
-        <div class="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-          <i class="pi pi-exclamation-triangle mt-0.5" aria-hidden="true"></i>
+      <div class="flex flex-col gap-5">
+        <div hlmAlert>
+          <ng-icon name="lucideTriangleAlert" />
           <div>
-            <p class="font-medium">{{ confirmationTitle }}</p>
-            <p class="mt-1 text-sm leading-6">{{ confirmationMessage }}</p>
+            <h3 hlmAlertTitle>{{ confirmationTitle }}</h3>
+            <p hlmAlertDescription>{{ confirmationMessage }}</p>
           </div>
         </div>
 
         @if (errorMessage()) {
-          <p-message severity="error" class="w-full" role="alert" aria-live="polite">
-            {{ errorMessage() }}
-          </p-message>
+          <div hlmAlert variant="destructive" aria-live="polite">
+            <ng-icon name="lucideTriangleAlert" />
+            <div><h3 hlmAlertTitle>Error</h3><p hlmAlertDescription>{{ errorMessage() }}</p></div>
+          </div>
         }
 
-        <div
-          class="flex flex-col-reverse gap-2 border-t border-surface-200 pt-4 sm:flex-row sm:justify-end"
-        >
-          <p-button
-            label="Cancelar"
-            type="button"
-            severity="secondary"
-            [outlined]="true"
-            [disabled]="isLoading()"
-            (onClick)="close()"
-          />
-          <p-button
-            [label]="confirmLabel"
-            type="button"
-            [loading]="isLoading()"
-            (onClick)="confirm()"
-          />
-        </div>
+        <hlm-dialog-footer class="border-t border-border pt-4">
+          <button hlmBtn variant="outline" type="button" [disabled]="isLoading()" (click)="close()">Cancelar</button>
+          <button hlmBtn type="button" [disabled]="isLoading()" (click)="confirm()">
+            @if (isLoading()) { <hlm-spinner /> }
+            {{ confirmLabel }}
+          </button>
+        </hlm-dialog-footer>
       </div>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PasswordActionDialog {
-  private readonly dialogRef = inject(DynamicDialogRef);
+  private readonly dialogRef = inject<BrnDialogRef<UserResponse | null>>(BrnDialogRef);
   private readonly userDataSource = inject(UserDataSource);
-  readonly data = inject(DynamicDialogConfig<PasswordActionDialogData>).data;
+  readonly data = injectBrnDialogContext<PasswordActionDialogData>();
 
   readonly delivery = signal<PasswordActionDelivery | null>(null);
   readonly updatedUser = signal<UserResponse | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly isLoading = signal(false);
+
+  get dialogTitle(): string {
+    return this.data.operation === 'reset'
+      ? 'Restablecer contraseña'
+      : this.data.user.passwordAction?.purpose === 'INITIAL_SETUP'
+        ? 'Reenviar enlace de configuración'
+        : 'Reenviar enlace de restablecimiento';
+  }
 
   get confirmationTitle(): string {
     return this.data.operation === 'reset'

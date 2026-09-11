@@ -1,62 +1,75 @@
-<div class="flex items-center justify-between mb-4">
+<div class="mb-4 flex items-center justify-between">
   <h2 class="text-2xl font-semibold">Usuarios</h2>
-  <p-button
-    label="Agregar"
-    icon="pi pi-plus"
-    iconPos="left"
-    size="small"
-    (onClick)="openUserDialog()"
-  />
+  <button hlmBtn size="sm" type="button" (click)="openUserDialog()">
+    <ng-icon name="lucidePlus" />
+    Agregar
+  </button>
 </div>
-<div>
-  <p-table
-    #table
-    [value]="dataSource()"
-    [totalRecords]="dataSize()"
-    [rows]="limit()"
-    [paginator]="true"
-    (onPage)="changePage($event)"
-    size="small"
-  >
-    <ng-template #caption>
-      <div class="flex sm:justify-end">
-        <div class="w-full sm:w-1/4">
-          <search-input (search)="search($event)" label="Buscar" />
-        </div>
-      </div>
-    </ng-template>
-    <ng-template #header>
-      <tr>
-        <th>Usuario</th>
-        <th>Nombre</th>
-        <th>Correo</th>
-        <th class="w-[150px]">Estado</th>
-        <th style="width: 2rem"></th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-item>
-      <tr>
-        <td>{{ item.login }}</td>
-        <td>{{ item.fullName | titlecase }}</td>
-        <td>{{ item.email ? item.email : 'Sin correo' }}</td>
-        <td>
-          @if (item.isActive) {
-            <p-tag severity="success" value="Habilitado" />
-          } @else {
-            <p-tag severity="warn" value="Deshabilitado" />
-          }
-        </td>
-        <td>
-          <p-button
-            severity="secondary"
-            [rounded]="true"
-            icon="pi pi-ellipsis-v"
-            size="small"
-            (click)="openMenu(item); menu.toggle($event)"
-          />
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-  <p-menu #menu [popup]="true" appendTo="body" [model]="menuItems"></p-menu>
+<div class="flex flex-col gap-4">
+  <div class="flex sm:justify-end">
+    <div class="w-full sm:w-1/4">
+      <search-input (search)="search($event)" label="Buscar" />
+    </div>
+  </div>
+
+  <div hlmTableContainer class="rounded-lg border border-border">
+    <table hlmTable>
+      <thead hlmTHead>
+        <tr hlmTr>
+          <th hlmTh>Usuario</th>
+          <th hlmTh>Nombre</th>
+          <th hlmTh>Correo</th>
+          <th hlmTh class="w-[150px]">Estado</th>
+          <th hlmTh class="w-10"><span class="sr-only">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody hlmTBody>
+        @for (item of dataSource(); track item.id) {
+          <tr hlmTr>
+            <td hlmTd>{{ item.login }}</td>
+            <td hlmTd>{{ item.fullName | titlecase }}</td>
+            <td hlmTd>{{ item.email ? item.email : 'Sin correo' }}</td>
+            <td hlmTd>
+              @if (item.isActive) {
+                <span hlmBadge>Habilitado</span>
+              } @else {
+                <span hlmBadge variant="secondary">Deshabilitado</span>
+              }
+            </td>
+            <td hlmTd>
+              <button hlmBtn variant="ghost" size="icon-sm" type="button" [hlmDropdownMenuTrigger]="actionsMenu" aria-label="Abrir acciones">
+                <ng-icon name="lucideEllipsisVertical" />
+              </button>
+              <ng-template #actionsMenu>
+                <hlm-dropdown-menu class="w-72">
+                  <hlm-dropdown-menu-label>Opciones</hlm-dropdown-menu-label>
+                  <hlm-dropdown-menu-separator />
+                  <button hlmDropdownMenuItem type="button" (click)="openUserDialog(item)">
+                    <ng-icon name="lucidePencil" />
+                    Editar
+                  </button>
+                  @if (item.isActive) {
+                    <button hlmDropdownMenuItem type="button" (click)="openPasswordActionDialog(item, item.passwordAction ? 'resend' : 'reset')">
+                      <ng-icon [name]="item.passwordAction ? 'lucideSend' : 'lucideRotateCcw'" />
+                      {{ passwordActionLabel(item) }}
+                    </button>
+                  }
+                </hlm-dropdown-menu>
+              </ng-template>
+            </td>
+          </tr>
+        } @empty {
+          <tr hlmTr><td hlmTd colspan="5" class="h-24 text-center text-muted-foreground">Sin registros</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <hlm-numbered-pagination
+    [currentPage]="currentPage()"
+    (currentPageChange)="changePage($event)"
+    [itemsPerPage]="limit()"
+    (itemsPerPageChange)="changePageSize($event)"
+    [totalItems]="dataSize()"
+  />
 </div>

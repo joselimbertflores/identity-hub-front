@@ -1,58 +1,78 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { UpperCasePipe } from '@angular/common';
-
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ButtonModule } from 'primeng/button';
-import { MessageService } from 'primeng/api';
+import { NgIcon } from '@ng-icons/core';
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { HlmButtonImports } from '@spartan-ng/helm/button';
+import {
+  HlmDialogFooter,
+  HlmDialogHeader,
+  HlmDialogTitle,
+} from '@spartan-ng/helm/dialog';
 
 import { ApplicationResponse } from '../../interfaces';
 
+export interface ClientSecretDialogContext {
+  application: ApplicationResponse;
+  clientSecret: string;
+}
+
 @Component({
   selector: 'app-client-secret-dialog',
-  imports: [ButtonModule, ClipboardModule, UpperCasePipe],
+  imports: [
+    ClipboardModule,
+    UpperCasePipe,
+    NgIcon,
+    HlmButtonImports,
+    HlmDialogFooter,
+    HlmDialogHeader,
+    HlmDialogTitle,
+  ],
+  host: { class: 'flex flex-col gap-4' },
   template: `
+    <hlm-dialog-header>
+      <h2 hlmDialogTitle>Nuevo secreto generado</h2>
+    </hlm-dialog-header>
     <div class="flex flex-col gap-2">
-      <p class="m-0 text-sm text-color-secondary">
+      <p class="m-0 text-sm text-muted-foreground">
         Copia el secreto generado para
-        <span class="font-medium text-color">{{ application.name | uppercase }}</span
+        <span class="font-medium text-foreground">{{ application.name | uppercase }}</span
         >. Por seguridad, no volverá a mostrarse.
       </p>
 
-      <div class="rounded-lg border border-surface-200 bg-surface-50 p-3">
+      <div class="rounded-lg border border-border bg-muted/50 p-3">
         <code class="break-all text-sm">
           {{ clientSecret }}
         </code>
       </div>
 
       <div class="flex justify-end">
-        <p-button
-          size="small"
+        <button
+          hlmBtn
+          size="sm"
           type="button"
-          icon="pi pi-copy"
-          [label]="copied() ? 'Copiado' : 'Copiar'"
-          [severity]="copied() ? 'success' : 'secondary'"
+          [variant]="copied() ? 'default' : 'secondary'"
           [cdkCopyToClipboard]="clientSecret"
           (cdkCopyToClipboardCopied)="onClientSecretCopied($event)"
-        />
+        >
+          <ng-icon [name]="copied() ? 'lucideCheck' : 'lucideCopy'" />
+          {{ copied() ? 'Copiado' : 'Copiar' }}
+        </button>
       </div>
     </div>
-    <div class="p-dialog-footer">
-      <p-button label="Entendido" (onClick)="close()" />
-    </div>
+    <hlm-dialog-footer>
+      <button hlmBtn type="button" (click)="close()">Entendido</button>
+    </hlm-dialog-footer>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  providers: [MessageService],
 })
 export class ClientSecretDialog {
-  readonly config = inject(DynamicDialogConfig);
-  readonly dialogRef = inject(DynamicDialogRef);
-  readonly messageService = inject(MessageService);
+  private readonly dialogRef = inject<BrnDialogRef<void>>(BrnDialogRef);
+  private readonly context = injectBrnDialogContext<ClientSecretDialogContext>();
 
-  clientSecret = this.config.data.clientSecret;
-  application: ApplicationResponse = this.config.data.application;
-
-  copied = signal(false);
+  readonly clientSecret = this.context.clientSecret;
+  readonly application = this.context.application;
+  readonly copied = signal(false);
 
   onClientSecretCopied(copied: boolean): void {
     if (!copied) return;
