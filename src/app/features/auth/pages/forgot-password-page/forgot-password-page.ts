@@ -14,7 +14,7 @@ import { AuthDataSource } from '../../../../core';
 import { AppIcon } from '../../../../shared';
 
 const GENERIC_RESULT =
-  'Si la cuenta puede recuperarse, enviaremos instrucciones al correo registrado.';
+  'Si encontramos una cuenta válida con correo registrado, recibirás instrucciones para recuperar el acceso.';
 
 @Component({
   selector: 'app-forgot-password-page',
@@ -39,10 +39,10 @@ const GENERIC_RESULT =
             <div class="flex flex-col items-center text-center">
               <app-icon class="size-14 text-primary sm:size-16" />
               <h1 class="mt-2 text-xl font-semibold text-foreground sm:text-2xl">
-                Recuperar contraseña
+                Recuperar acceso
               </h1>
               <p class="mt-2 text-sm leading-6 text-muted-foreground">
-                Ingrese su nombre de usuario o correo institucional.
+                Ingresa tu nombre de usuario o correo.
               </p>
             </div>
 
@@ -52,6 +52,9 @@ const GENERIC_RESULT =
                   <ng-icon name="lucideCircleCheck" class="text-primary" />
                   <div><h2 hlmAlertTitle>Solicitud recibida</h2><p hlmAlertDescription>{{ genericResult }}</p></div>
                 </div>
+                <p class="text-center text-sm text-muted-foreground">
+                  Si no tienes un correo registrado, comunícate con Sistemas.
+                </p>
                 <a hlmBtn routerLink="/login" class="w-full">Volver al inicio de sesión</a>
               </div>
             } @else {
@@ -64,8 +67,11 @@ const GENERIC_RESULT =
                     type="text"
                     autocomplete="username"
                     formControlName="identifier"
-                    placeholder="Usuario o correo institucional"
+                    placeholder="Usuario o correo"
                   />
+                  <p hlmFieldDescription>
+                    Si utilizabas Seguimiento de Trámites, puedes usar el mismo nombre de usuario.
+                  </p>
                   @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
                     <hlm-field-error>Ingrese su usuario o correo.</hlm-field-error>
                   }
@@ -80,7 +86,7 @@ const GENERIC_RESULT =
 
                 <button hlmBtn class="w-full" type="submit" [disabled]="form.invalid || isSubmitting()">
                   @if (isSubmitting()) { <hlm-spinner /> }
-                  Solicitar recuperación
+                  Enviar instrucciones
                 </button>
               </form>
               <div class="mt-6 border-t border-border pt-4 text-center">

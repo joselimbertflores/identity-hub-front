@@ -189,7 +189,7 @@ export interface UserEditorContext {
 })
 export class UserEditor {
   private readonly formBuilder = inject(FormBuilder);
-  private readonly dialogRef = inject<BrnDialogRef<UserResponse>>(BrnDialogRef);
+  private readonly dialogRef = inject<BrnDialogRef<boolean>>(BrnDialogRef);
   private readonly userDataSource = inject(UserDataSource);
 
   readonly data = injectBrnDialogContext<UserEditorContext>().user;
@@ -247,11 +247,7 @@ export class UserEditor {
         .update(this.data.id, request)
         .pipe(finalize(() => this.isSaving.set(false)))
         .subscribe({
-          next: ({ user }) =>
-            this.dialogRef.close({
-              ...user,
-              passwordAction: this.data!.passwordAction,
-            }),
+          next: () => this.dialogRef.close(true),
           error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error)),
         });
       return;
@@ -261,17 +257,7 @@ export class UserEditor {
       .create(request)
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe({
-        next: (response) =>
-          this.createdResult.set({
-            ...response,
-            user: {
-              ...response.user,
-              passwordAction: {
-                purpose: 'INITIAL_SETUP',
-                expiresAt: response.passwordAction.expiresAt,
-              },
-            },
-          }),
+        next: (response) => this.createdResult.set(response),
         error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error)),
       });
   }
@@ -281,7 +267,7 @@ export class UserEditor {
   }
 
   closeCreatedResult(): void {
-    this.dialogRef.close(this.createdResult()?.user);
+    this.dialogRef.close(true);
   }
 
   private loadForm(): void {
@@ -299,6 +285,9 @@ export class UserEditor {
     if (error.status === 0) {
       return 'No se pudo conectar con el servidor. Revise su conexión e intente nuevamente.';
     }
+    if (this.getErrorCode(error) === 'USER_EMAIL_REQUIRED') {
+      return 'Debes registrar un correo antes de enviar instrucciones de acceso.';
+    }
     if (error.status === 409) {
       return 'El nombre de usuario o correo ya está registrado.';
     }
@@ -306,5 +295,11 @@ export class UserEditor {
       return 'Revise los datos del usuario e intente nuevamente.';
     }
     return 'No se pudo guardar el usuario. Intente nuevamente.';
+  }
+
+  private getErrorCode(error: HttpErrorResponse): string | null {
+    if (!error.error || typeof error.error !== 'object') return null;
+    const body = error.error as { code?: unknown };
+    return typeof body.code === 'string' ? body.code : null;
   }
 }

@@ -71,40 +71,47 @@ const ERROR_MESSAGES: Record<string, string> = {
               <fieldset hlmFieldSet>
                 <legend hlmFieldLegend class="sr-only">Credenciales de acceso</legend>
                 <div hlmFieldGroup>
-
-                <div hlmField>
-                  <label hlmFieldLabel for="login">Nombre de usuario</label>
-                  <input
-                    hlmInput
-                    id="login"
-                    type="text"
-                    placeholder="Ingrese su nombre de usuario"
-                    autocomplete="username"
-                    formControlName="login"
-                  />
-                </div>
-
-                <div hlmField>
-                  <label hlmFieldLabel for="password">Contraseña</label>
-                  <div hlmInputGroup>
-                    <input hlmInputGroupInput id="password" [type]="hidePassword ? 'password' : 'text'" placeholder="Ingrese su contraseña" autocomplete="current-password" formControlName="password" />
-                    <span hlmInputGroupAddon align="inline-end">
-                      <button hlmInputGroupButton size="icon-xs" type="button" aria-label="Mostrar u ocultar contraseña" (click)="hidePassword = !hidePassword">
-                        <ng-icon [name]="hidePassword ? 'lucideEye' : 'lucideEyeOff'" />
-                      </button>
-                    </span>
+                  <div hlmField>
+                    <label hlmFieldLabel for="login">Nombre de usuario</label>
+                    <input
+                      hlmInput
+                      id="login"
+                      type="text"
+                      placeholder="Ingrese su nombre de usuario"
+                      autocomplete="username"
+                      formControlName="login"
+                    />
                   </div>
-                </div>
 
-                <div hlmField orientation="horizontal">
-                  <hlm-checkbox
-                    inputId="rememberme"
-                    formControlName="remember"
-                  />
-                  <label hlmFieldLabel for="rememberme">
-                    Recordar nombre de usuario
-                  </label>
-                </div>
+                  <div hlmField>
+                    <label hlmFieldLabel for="password">Contraseña</label>
+                    <div hlmInputGroup>
+                      <input
+                        hlmInputGroupInput
+                        id="password"
+                        [type]="hidePassword ? 'password' : 'text'"
+                        placeholder="Ingrese su contraseña"
+                        autocomplete="current-password"
+                        formControlName="password"
+                      />
+                      <span hlmInputGroupAddon align="inline-end">
+                        <button
+                          hlmInputGroupButton
+                          size="icon-xs"
+                          type="button"
+                          aria-label="Mostrar u ocultar contraseña"
+                          (click)="hidePassword = !hidePassword"
+                        >
+                          <ng-icon [name]="hidePassword ? 'lucideEye' : 'lucideEyeOff'" />
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div hlmField orientation="horizontal">
+                    <hlm-checkbox inputId="rememberme" formControlName="remember" />
+                    <label hlmFieldLabel for="rememberme"> Recordar nombre de usuario </label>
+                  </div>
                 </div>
               </fieldset>
 
@@ -113,43 +120,47 @@ const ERROR_MESSAGES: Record<string, string> = {
                   routerLink="/forgot-password"
                   class="text-sm font-medium text-primary hover:underline"
                 >
-                  Olvidé mi contraseña
+                  ¿No puedes acceder?
                 </a>
               </div>
 
               @if (errorMessage()) {
                 <div hlmAlert variant="destructive" aria-live="polite">
                   <ng-icon name="lucideTriangleAlert" />
-                  <div><h3 hlmAlertTitle>Error</h3><p hlmAlertDescription>{{ errorMessage() }}</p></div>
+                  <div>
+                    <h3 hlmAlertTitle>Error</h3>
+                    <p hlmAlertDescription>{{ errorMessage() }}</p>
+                  </div>
                 </div>
               }
 
               @if (successMessage()) {
                 <div hlmAlert role="status" aria-live="polite">
                   <ng-icon name="lucideCircleCheck" class="text-primary" />
-                  <div><h3 hlmAlertTitle>Operación completada</h3><p hlmAlertDescription>{{ successMessage() }}</p></div>
+                  <div>
+                    <h3 hlmAlertTitle>Operación completada</h3>
+                    <p hlmAlertDescription>{{ successMessage() }}</p>
+                  </div>
                 </div>
               }
 
-              <button hlmBtn class="w-full" type="submit" [disabled]="loginForm.invalid || isSubmitting()">
-                @if (isSubmitting()) { <hlm-spinner /> }
+              <button
+                hlmBtn
+                class="w-full"
+                type="submit"
+                [disabled]="loginForm.invalid || isSubmitting()"
+              >
+                @if (isSubmitting()) {
+                  <hlm-spinner />
+                }
                 Ingresar
               </button>
             </form>
 
             <footer class="mt-6 border-t border-border pt-4">
-              <div
-                class="flex items-center justify-center gap-3 text-center text-muted-foreground"
-              >
-                <img
-                  src="/sacaba-mark.svg"
-                  alt=""
-                  aria-hidden="true"
-                  class="size-9 shrink-0"
-                />
-                <p class="max-w-56 text-xs leading-5">
-                  Gobierno Autónomo Municipal de Sacaba
-                </p>
+              <div class="flex items-center justify-center gap-3 text-center text-muted-foreground">
+                <img src="/sacaba-mark.svg" alt="" aria-hidden="true" class="size-9 shrink-0" />
+                <p class="max-w-56 text-xs leading-5">Gobierno Autónomo Municipal de Sacaba</p>
               </div>
             </footer>
           </div>
@@ -256,7 +267,7 @@ export default class LoginPage {
     const navigationState = window.history.state as { passwordActionCompleted?: unknown };
     if (navigationState.passwordActionCompleted === true) {
       this.successMessage.set(
-        'La contraseña fue establecida correctamente. Ya puede iniciar sesión.',
+        'La contraseña fue actualizada correctamente. Ya puede iniciar sesión.',
       );
     }
   }

@@ -2,36 +2,31 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { NgIcon } from '@ng-icons/core';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 
-import { PasswordActionDelivery, PasswordActionManualDetails } from '../../interfaces';
-import { ManualPasswordAction } from '../manual-password-action/manual-password-action';
+import { PasswordActionDelivery } from '../../interfaces';
 
 export type PasswordActionContext = 'create' | 'reset' | 'resend';
 
 @Component({
   selector: 'app-password-action-delivery',
-  imports: [NgIcon, HlmAlertImports, ManualPasswordAction],
+  imports: [NgIcon, HlmAlertImports],
   template: `
     <div class="flex flex-col gap-5">
-      @if (emailSent()) {
+      @if (delivery().status === 'SENT') {
         <div hlmAlert role="status">
           <ng-icon name="lucideCircleCheck" class="text-primary" />
-          <div><h3 hlmAlertTitle>Correo enviado</h3><p hlmAlertDescription>{{ emailSuccessMessage() }}</p></div>
+          <div>
+            <h3 hlmAlertTitle>Correo enviado</h3>
+            <p hlmAlertDescription>{{ emailSuccessMessage() }}</p>
+          </div>
         </div>
       } @else {
-        @if (emailFailed()) {
-          <div hlmAlert>
-            <ng-icon name="lucideTriangleAlert" />
-            <div><h3 hlmAlertTitle>No se pudo enviar el correo</h3><p hlmAlertDescription>{{ emailFailureMessage() }}</p></div>
+        <div hlmAlert>
+          <ng-icon name="lucideTriangleAlert" />
+          <div>
+            <h3 hlmAlertTitle>No se pudo enviar el correo</h3>
+            <p hlmAlertDescription>{{ emailFailureMessage() }}</p>
           </div>
-        } @else {
-          <div hlmAlert role="status">
-            <div><h3 hlmAlertTitle>Entrega manual</h3><p hlmAlertDescription>La acción debe entregarse manualmente al usuario.</p></div>
-          </div>
-        }
-
-        @if (manualDetails(); as details) {
-          <app-manual-password-action [delivery]="details" />
-        }
+        </div>
       }
     </div>
   `,
@@ -40,33 +35,13 @@ export type PasswordActionContext = 'create' | 'reset' | 'resend';
 export class PasswordActionDeliveryView {
   readonly delivery = input.required<PasswordActionDelivery>();
   readonly context = input.required<PasswordActionContext>();
-  readonly emailSent = computed(() => {
-    const delivery = this.delivery();
-    return delivery.method === 'EMAIL' && delivery.status === 'SENT';
-  });
-  readonly emailFailed = computed(() => {
-    const delivery = this.delivery();
-    return delivery.method === 'EMAIL' && delivery.status === 'FAILED';
-  });
-
-  readonly manualDetails = computed<PasswordActionManualDetails | null>(() => {
-    const delivery = this.delivery();
-    if (delivery.method === 'MANUAL') {
-      const { code, actionUrl, expiresAt } = delivery;
-      return { code, actionUrl, expiresAt };
-    }
-    if (delivery.status === 'FAILED') {
-      return { ...delivery.fallback, expiresAt: delivery.expiresAt };
-    }
-    return null;
-  });
 
   readonly emailSuccessMessage = computed(() => {
     switch (this.context()) {
       case 'create':
         return 'Usuario creado y enlace de configuración enviado al correo registrado.';
       case 'reset':
-        return 'La contraseña anterior dejó de funcionar y el enlace de recuperación fue enviado al correo registrado.';
+        return 'La contraseña anterior dejó de funcionar y el enlace para establecer una nueva contraseña fue enviado al correo registrado.';
       case 'resend':
         return 'El enlace anterior fue invalidado y el nuevo enlace fue enviado al correo registrado.';
     }
@@ -75,11 +50,11 @@ export class PasswordActionDeliveryView {
   readonly emailFailureMessage = computed(() => {
     switch (this.context()) {
       case 'create':
-        return 'El usuario fue creado, pero no se pudo enviar el correo.';
+        return 'El usuario fue creado y la acción quedó pendiente, pero no se pudo enviar el correo. Intente reenviar el enlace.';
       case 'reset':
-        return 'La contraseña anterior dejó de funcionar, pero no se pudo enviar el correo.';
+        return 'La contraseña anterior dejó de funcionar y la acción quedó pendiente, pero no se pudo enviar el correo. Intente reenviar el enlace.';
       case 'resend':
-        return 'El enlace anterior fue invalidado, pero no se pudo enviar el correo.';
+        return 'El enlace anterior fue invalidado, pero no se pudo enviar el nuevo correo. Intente reenviar el enlace.';
     }
   });
 }

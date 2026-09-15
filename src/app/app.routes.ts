@@ -22,12 +22,12 @@ export const routes: Routes = [
   },
   {
     path: 'forgot-password',
-    title: 'Recuperar contraseña',
+    title: 'Recuperar acceso',
     loadComponent: () => import('./features/auth/pages/forgot-password-page/forgot-password-page'),
   },
   {
     path: 'set-password',
-    title: 'Establecer contraseña',
+    title: 'Establecer nueva contraseña',
     loadComponent: () => import('./features/auth/pages/set-password-page/set-password-page'),
   },
   {

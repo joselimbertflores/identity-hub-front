@@ -73,8 +73,8 @@ export default class SetPasswordPage {
   };
 
   constructor() {
-    const code = this.route.snapshot.queryParamMap.get('code');
-    if (code !== null) {
+    const code = this.route.snapshot.queryParamMap.get('code')?.trim();
+    if (code) {
       this.linkCode.set(code);
       this.form.controls.code.setValue(code);
     }
@@ -125,9 +125,11 @@ export default class SetPasswordPage {
           this.form.reset();
           this.linkCode.set(null);
           this.completed.set(true);
-          void this.router.navigateByUrl('/login', {
+          void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { code: null },
+            queryParamsHandling: 'merge',
             replaceUrl: true,
-            state: { passwordActionCompleted: true },
           });
         },
         error: (error: HttpErrorResponse) => this.errorMessage.set(getAuthErrorMessage(error)),

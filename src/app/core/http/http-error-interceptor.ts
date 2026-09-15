@@ -23,6 +23,14 @@ type ErrorToast = {
 };
 
 function getToastConfig(error: HttpErrorResponse): ErrorToast | null {
+  if (getErrorCode(error) === 'USER_EMAIL_REQUIRED') {
+    return {
+      type: 'warning',
+      title: 'Correo requerido',
+      description: 'Debes registrar un correo antes de enviar instrucciones de acceso.',
+    };
+  }
+
   const detail = getErrorDetail(error);
 
   switch (error.status) {
@@ -64,6 +72,13 @@ function getToastConfig(error: HttpErrorResponse): ErrorToast | null {
     default:
       return null;
   }
+}
+
+function getErrorCode(error: HttpErrorResponse): string | null {
+  if (!error.error || typeof error.error !== 'object') return null;
+
+  const code = error.error.code;
+  return typeof code === 'string' ? code : null;
 }
 
 function getErrorDetail(error: HttpErrorResponse): string {

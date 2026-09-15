@@ -28,12 +28,12 @@
           <tr hlmTr>
             <td hlmTd>{{ item.login }}</td>
             <td hlmTd>{{ item.fullName | titlecase }}</td>
-            <td hlmTd>{{ item.email ? item.email : 'Sin correo' }}</td>
+            <td hlmTd>{{ item.email ? item.email : 'Sin correo registrado' }}</td>
             <td hlmTd>
               @if (item.isActive) {
-                <span hlmBadge>Habilitado</span>
+                <span hlmBadge>Activo</span>
               } @else {
-                <span hlmBadge variant="secondary">Deshabilitado</span>
+                <span hlmBadge variant="secondary">Inactivo</span>
               }
             </td>
             <td hlmTd>

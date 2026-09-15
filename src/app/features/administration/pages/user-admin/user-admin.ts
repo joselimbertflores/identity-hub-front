@@ -65,26 +65,26 @@ export default class UserAdmin {
   readonly currentPage = computed(() => Math.floor(this.offset() / this.limit()) + 1);
 
   openUserDialog(user?: UserResponse): void {
-    const dialogRef = this.dialogService.open<UserResponse>(UserEditor, {
+    const dialogRef = this.dialogService.open<boolean>(UserEditor, {
       context: { user },
       contentClass: 'sm:!max-w-3xl',
       showCloseButton: false,
       disableClose: true,
     });
     dialogRef.closed$.subscribe((result) => {
-      if (result) this.updateItemDataSource(result);
+      if (result) this.roleResource.reload();
     });
   }
 
   openPasswordActionDialog(user: UserResponse, operation: PasswordActionOperation): void {
-    const dialogRef = this.dialogService.open<UserResponse | null>(PasswordActionDialog, {
+    const dialogRef = this.dialogService.open<boolean>(PasswordActionDialog, {
       context: { user, operation },
       contentClass: 'sm:!max-w-3xl',
       showCloseButton: false,
       disableClose: true,
     });
     dialogRef.closed$.subscribe((result) => {
-      if (result) this.updateItemDataSource(result);
+      if (result) this.roleResource.reload();
     });
   }
 
@@ -103,23 +103,10 @@ export default class UserAdmin {
   }
 
   passwordActionLabel(user: UserResponse): string {
-    if (!user.passwordAction) return 'Restablecer contraseña';
+    if (!user.passwordAction) return 'Forzar restablecimiento de contraseña';
     return user.passwordAction.purpose === 'INITIAL_SETUP'
       ? 'Reenviar enlace de configuración'
       : 'Reenviar enlace de restablecimiento';
   }
 
-  private updateItemDataSource(item: UserResponse): void {
-    const index = this.dataSource().findIndex(({ id }) => item.id === id);
-    if (index === -1) {
-      this.dataSource.update((values) => [item, ...values]);
-      this.dataSize.update((value) => value + 1);
-      return;
-    }
-
-    this.dataSource.update((values) => {
-      values[index] = item;
-      return [...values];
-    });
-  }
 }

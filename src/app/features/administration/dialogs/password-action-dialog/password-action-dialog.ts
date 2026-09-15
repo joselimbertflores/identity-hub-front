@@ -5,15 +5,11 @@ import { NgIcon } from '@ng-icons/core';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
-import {
-  HlmDialogFooter,
-  HlmDialogHeader,
-  HlmDialogTitle,
-} from '@spartan-ng/helm/dialog';
+import { HlmDialogFooter, HlmDialogHeader, HlmDialogTitle } from '@spartan-ng/helm/dialog';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { PasswordActionDeliveryView } from '../../components/password-action-delivery/password-action-delivery';
-import { PasswordActionDelivery, PasswordActionPurpose, UserResponse } from '../../interfaces';
+import { PasswordActionDelivery, UserResponse } from '../../interfaces';
 import { UserDataSource } from '../../services';
 
 export type PasswordActionOperation = 'reset' | 'resend';
@@ -58,14 +54,21 @@ export interface PasswordActionDialogData {
         @if (errorMessage()) {
           <div hlmAlert variant="destructive" aria-live="polite">
             <ng-icon name="lucideTriangleAlert" />
-            <div><h3 hlmAlertTitle>Error</h3><p hlmAlertDescription>{{ errorMessage() }}</p></div>
+            <div>
+              <h3 hlmAlertTitle>Error</h3>
+              <p hlmAlertDescription>{{ errorMessage() }}</p>
+            </div>
           </div>
         }
 
         <hlm-dialog-footer class="border-t border-border pt-4">
-          <button hlmBtn variant="outline" type="button" [disabled]="isLoading()" (click)="close()">Cancelar</button>
+          <button hlmBtn variant="outline" type="button" [disabled]="isLoading()" (click)="close()">
+            Cancelar
+          </button>
           <button hlmBtn type="button" [disabled]="isLoading()" (click)="confirm()">
-            @if (isLoading()) { <hlm-spinner /> }
+            @if (isLoading()) {
+              <hlm-spinner />
+            }
             {{ confirmLabel }}
           </button>
         </hlm-dialog-footer>
@@ -75,18 +78,18 @@ export interface PasswordActionDialogData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PasswordActionDialog {
-  private readonly dialogRef = inject<BrnDialogRef<UserResponse | null>>(BrnDialogRef);
+  private readonly dialogRef = inject<BrnDialogRef<boolean>>(BrnDialogRef);
   private readonly userDataSource = inject(UserDataSource);
   readonly data = injectBrnDialogContext<PasswordActionDialogData>();
 
   readonly delivery = signal<PasswordActionDelivery | null>(null);
-  readonly updatedUser = signal<UserResponse | null>(null);
+  readonly completed = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly isLoading = signal(false);
 
   get dialogTitle(): string {
     return this.data.operation === 'reset'
-      ? 'Restablecer contraseña'
+      ? 'Forzar restablecimiento de contraseña'
       : this.data.user.passwordAction?.purpose === 'INITIAL_SETUP'
         ? 'Reenviar enlace de configuración'
         : 'Reenviar enlace de restablecimiento';
@@ -94,18 +97,18 @@ export class PasswordActionDialog {
 
   get confirmationTitle(): string {
     return this.data.operation === 'reset'
-      ? `Restablecer la contraseña de ${this.data.user.login}`
+      ? `Forzar el restablecimiento de ${this.data.user.login}`
       : `${this.resendActionLabel} de ${this.data.user.login}`;
   }
 
   get confirmationMessage(): string {
     return this.data.operation === 'reset'
-      ? 'La contraseña actual dejará de funcionar y se revocarán las sesiones o tokens de renovación correspondientes. El usuario deberá establecer una nueva contraseña mediante el enlace enviado.'
+      ? 'La contraseña actual dejará de funcionar y se revocarán las sesiones o tokens de renovación correspondientes. El usuario deberá establecer una nueva contraseña y se intentarán enviar instrucciones a su correo registrado.'
       : `El enlace anterior dejará de funcionar. Se generará uno nuevo con una nueva expiración.${this.currentExpirationMessage}`;
   }
 
   get confirmLabel(): string {
-    return this.data.operation === 'reset' ? 'Restablecer contraseña' : this.resendActionLabel;
+    return this.data.operation === 'reset' ? 'Forzar restablecimiento' : this.resendActionLabel;
   }
 
   confirm(): void {
@@ -120,14 +123,7 @@ export class PasswordActionDialog {
 
     request.pipe(finalize(() => this.isLoading.set(false))).subscribe({
       next: ({ passwordAction }) => {
-        const purpose: PasswordActionPurpose =
-          this.data.operation === 'reset'
-            ? 'PASSWORD_RESET'
-            : this.data.user.passwordAction!.purpose;
-        this.updatedUser.set({
-          ...this.data.user,
-          passwordAction: { purpose, expiresAt: passwordAction.expiresAt },
-        });
+        this.completed.set(true);
         this.delivery.set(passwordAction);
       },
       error: (error: HttpErrorResponse) => this.errorMessage.set(this.getErrorMessage(error)),
@@ -135,7 +131,7 @@ export class PasswordActionDialog {
   }
 
   close(): void {
-    this.dialogRef.close(this.updatedUser());
+    this.dialogRef.close(this.completed());
   }
 
   private get resendActionLabel(): string {
@@ -155,14 +151,15 @@ export class PasswordActionDialog {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(expiration);
-    return expiration.getTime() <= Date.now()
-      ? ` El enlace actual venció el ${formattedExpiration}.`
-      : ` El enlace actual vence el ${formattedExpiration}.`;
+    return ` El enlace actual vence el ${formattedExpiration}.`;
   }
 
   private getErrorMessage(error: HttpErrorResponse): string {
     if (error.status === 0) {
       return 'No se pudo conectar con el servidor. Revise su conexión e intente nuevamente.';
+    }
+    if (this.getErrorCode(error) === 'USER_EMAIL_REQUIRED') {
+      return 'Debes registrar un correo antes de enviar instrucciones de acceso.';
     }
     if (error.status === 404) {
       return this.data.operation === 'resend'
@@ -173,5 +170,11 @@ export class PasswordActionDialog {
       return 'La información cambió mientras se procesaba la solicitud. Cierre el diálogo, actualice la lista e intente nuevamente.';
     }
     return 'No se pudo completar la operación. Intente nuevamente.';
+  }
+
+  private getErrorCode(error: HttpErrorResponse): string | null {
+    if (!error.error || typeof error.error !== 'object') return null;
+    const body = error.error as { code?: unknown };
+    return typeof body.code === 'string' ? body.code : null;
   }
 }

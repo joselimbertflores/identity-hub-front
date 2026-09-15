@@ -5,7 +5,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   'Password confirmation does not match.': 'Las contraseñas no coinciden.',
   'Credentials changed while processing the request':
     'Las credenciales cambiaron mientras se procesaba la solicitud. Revise los datos e intente nuevamente.',
-  'The password action code is invalid or expired.': 'El código no es válido o ha vencido.',
+  'The password action code is invalid or expired.':
+    'El enlace ya no es válido. Solicita uno nuevo desde “¿No puedes acceder?”.',
 };
 
 export function getAuthErrorMessage(error: HttpErrorResponse): string {
