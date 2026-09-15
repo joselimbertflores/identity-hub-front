@@ -65,6 +65,7 @@ export class ApplicationEditor {
     ],
     description: [''],
     launchUrl: ['', Validators.required],
+    backchannelLogoutUri: ['', Validators.pattern(/^https?:\/\/\S+$/i)],
     isConfidential: [true],
     isActive: [true],
     redirectUris: [[], Validators.required],
@@ -84,13 +85,21 @@ export class ApplicationEditor {
       return;
     }
 
+    const backchannelLogoutUri = String(
+      this.applicationForm.controls['backchannelLogoutUri'].value ?? '',
+    ).trim();
+    const form = {
+      ...this.applicationForm.value,
+      backchannelLogoutUri: backchannelLogoutUri || null,
+    };
+
     if (this.data) {
-      this.clientDataSource.update(this.data.id, this.applicationForm.value).subscribe((app) => {
+      this.clientDataSource.update(this.data.id, form).subscribe((app) => {
         this.dialogRef.close({ application: app });
       });
     } else {
       this.clientDataSource
-        .create(this.applicationForm.value)
+        .create(form)
         .subscribe(({ clientSecret, application }) => {
           this.dialogRef.close({ application, clientSecret });
         });

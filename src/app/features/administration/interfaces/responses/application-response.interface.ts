@@ -4,6 +4,7 @@ export interface ApplicationResponse {
   name: string;
   description: string;
   launchUrl: string;
+  backchannelLogoutUri: string | null;
   isConfidential: boolean;
   isActive: boolean;
   createdAt: string;

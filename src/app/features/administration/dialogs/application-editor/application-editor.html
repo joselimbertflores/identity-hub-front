@@ -67,6 +67,24 @@
       }
     </div>
 
+    <div hlmField class="lg:col-span-2">
+      <label hlmFieldLabel for="backchannelLogoutUri">URL de logout back-channel</label>
+      <input
+        id="backchannelLogoutUri"
+        hlmInput
+        type="url"
+        autocomplete="off"
+        placeholder="https://sistema.ejemplo/auth/backchannel-logout"
+        formControlName="backchannelLogoutUri"
+      />
+      <p hlmFieldDescription>
+        Endpoint backend del cliente donde SIAU enviará el Logout Token.
+      </p>
+      @if (formUtils.isInvalid(applicationForm.controls['backchannelLogoutUri'])) {
+        <hlm-field-error>Ingrese una URL HTTP o HTTPS válida.</hlm-field-error>
+      }
+    </div>
+
     <div hlmField orientation="horizontal">
       <input id="color" hlmInput class="w-16 p-1" type="color" formControlName="color" />
       <label hlmFieldLabel for="color">Color del sistema</label>
