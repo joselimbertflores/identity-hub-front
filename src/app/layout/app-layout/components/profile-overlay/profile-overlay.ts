@@ -23,7 +23,7 @@ import { AuthDataSource } from '../../../../core';
       </button>
       <hlm-popover-content *hlmPopoverPortal class="w-[300px]">
         <hlm-popover-header class="items-center text-center">
-          <hlm-avatar class="size-16">
+          <hlm-avatar class="size-12">
             <span hlmAvatarFallback><ng-icon name="lucideUser" /></span>
           </hlm-avatar>
           <h2 hlmPopoverTitle>{{ user()?.fullName | titlecase }}</h2>

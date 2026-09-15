@@ -53,6 +53,6 @@ export default class ChangePasswordPage {
       // A malformed backend redirect falls back to the authenticated home.
     }
 
-    void this.router.navigateByUrl('/home/welcome');
+    void this.router.navigateByUrl('/home');
   }
 }

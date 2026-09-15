@@ -5,7 +5,7 @@ import { NgIcon } from '@ng-icons/core';
 import { AuthDataSource } from '../../../../core';
 
 @Component({
-  selector: 'app-welcome-page',
+  selector: 'app-home-page',
   imports: [TitleCasePipe, NgIcon],
   template: `
     <div class="flex flex-col items-center justify-center h-full p-4 text-center">
@@ -20,7 +20,7 @@ import { AuthDataSource } from '../../../../core';
         </h1>
 
         <p class="mb-6 text-sm font-medium leading-relaxed text-muted-foreground sm:text-lg">
-          Su sesión está activa en el Sistema Institucional de Autenticación y Acceso.
+          Su sesión está activa en el Sistema de Identidad y Acceso Unificado.
         </p>
 
         <div class="mt-12 flex justify-center border-t border-border pt-8">
@@ -34,6 +34,6 @@ import { AuthDataSource } from '../../../../core';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class WelcomePage {
+export default class HomePage {
   readonly userFullName = inject(AuthDataSource).user()?.fullName;
 }

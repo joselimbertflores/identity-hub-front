@@ -24,7 +24,7 @@ export const isNotAuthenticatedGuard: CanActivateFn = (route) => {
         );
       }
 
-      return of(router.createUrlTree(['/home/welcome']));
+      return of(router.createUrlTree(['/home']));
     }),
   );
 };

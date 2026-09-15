@@ -13,7 +13,6 @@ import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 
 import { AuthDataSource } from '../../../../core';
 import { FormUtils } from '../../../../helpers';
-import { AppIcon } from '../../../../shared';
 import { getAuthErrorMessage } from '../../utils/auth-error';
 import {
   passwordMatchValidator,
@@ -32,7 +31,6 @@ import {
     HlmInputImports,
     HlmInputGroupImports,
     HlmSpinnerImports,
-    AppIcon,
   ],
   templateUrl: './set-password-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,15 +4,14 @@ import { NgIcon } from '@ng-icons/core';
 
 import { AuthUserResponse } from '../../../../core/auth/auth.types';
 import { MENU_ACTIONS } from '../../../../features/administration/constants/menu.config';
-import { AppIcon } from '../../../../shared';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterModule, NgIcon, AppIcon],
+  imports: [RouterModule, NgIcon],
   template: `
     <nav class="h-full flex flex-col">
       <div class="flex h-14 items-center gap-4 border-b border-sidebar-border px-6">
-        <app-icon class="size-8 text-primary" />
+        <img src="/identity-hub-mark.svg" alt="" aria-hidden="true" class="size-10" />
         <span class="text-xl font-bold tracking-tight text-sidebar-foreground"> SIAA </span>
       </div>
 
