@@ -25,6 +25,10 @@ export class AuthDataSource {
   private _mustChangePassword = linkedSignal(() => this._user()?.mustChangePassword ?? false);
   mustChangePassword = computed(() => this._mustChangePassword());
 
+  clearAuthState() {
+    this._user.set(null);
+  }
+
   checkAuthStatus() {
     return this.http.get<{ user: AuthUserResponse }>(`${this.URL}/status`).pipe(
       tap(({ user }) => {
