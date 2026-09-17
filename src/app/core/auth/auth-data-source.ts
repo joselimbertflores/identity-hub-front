@@ -1,5 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { computed, inject, Injectable, linkedSignal, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, linkedSignal, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError, map, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -18,12 +19,28 @@ import {
 export class AuthDataSource {
   readonly URL = `${environment.identityHubUrl}/api/auth`;
   private http = inject(HttpClient);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+  private authChannel =
+    typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('identity-auth');
 
   private _user = signal<AuthUserResponse | null>(null);
   user = computed(() => this._user());
 
   private _mustChangePassword = linkedSignal(() => this._user()?.mustChangePassword ?? false);
   mustChangePassword = computed(() => this._mustChangePassword());
+
+  constructor() {
+    if (this.authChannel) {
+      this.authChannel.onmessage = (event: MessageEvent) => {
+        if (event.data?.type === 'logout') {
+          this.clearAuthState();
+          void this.router.navigateByUrl('/login');
+        }
+      };
+      this.destroyRef.onDestroy(() => this.authChannel?.close());
+    }
+  }
 
   clearAuthState() {
     this._user.set(null);
@@ -69,6 +86,11 @@ export class AuthDataSource {
   }
 
   logout() {
-    return this.http.post(`${this.URL}/logout`, {}, { withCredentials: true });
+    return this.http.post(`${this.URL}/logout`, {}, { withCredentials: true }).pipe(
+      tap(() => {
+        this.clearAuthState();
+        this.authChannel?.postMessage({ type: 'logout' });
+      }),
+    );
   }
 }
