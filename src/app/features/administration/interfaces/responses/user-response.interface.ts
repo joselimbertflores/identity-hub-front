@@ -29,6 +29,31 @@ export interface SaveUserRequest {
   applicationIds: number[];
 }
 
+export interface CreateUserRequest
+  extends Omit<SaveUserRequest, 'fullName' | 'relationKey' | 'email' | 'applicationIds'> {
+  relationKey: string;
+  email: string;
+  applicationIds: string[];
+}
+
+export interface EmployeeResponse {
+  relationKey: string;
+  fullName: string;
+  position: string | null;
+  unit: string | null;
+  area: string | null;
+}
+
+export interface EmployeeSearchResponse {
+  data: EmployeeResponse[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export interface UserApplicationResponse {
   id: number;
   name: string;
